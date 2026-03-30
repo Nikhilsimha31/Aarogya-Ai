@@ -1,136 +1,103 @@
-# 🏥 MediScan AI — Disease Risk Predictor Web App
+🏥 MediScan AI — Disease Risk Predictor
 
-A beautiful Flask web application that connects **7 trained ML models** to a
-professional symptom-based disease risk prediction interface.
+🔗 Live App: https://aarogya-ai-09ha.onrender.com/
 
----
+MediScan AI is a machine learning powered healthcare web application that predicts potential disease risks based on a person's symptoms, lifestyle, and health indicators.
 
-## 📁 Project Structure
+I built this project to explore real-world applications of machine learning in healthcare, combining Flask, Python, and multiple trained ML models into a single intelligent system.
 
-```
-disease_predictor/
-├── app.py                  ← Flask backend (main server)
-├── templates/
-│   └── index.html          ← Frontend UI (all-in-one HTML)
-├── models/
-│   ├── breast_model.pkl
-│   ├── diabetes_model.pkl
-│   ├── heart_model.pkl
-│   ├── liver_model.pkl
-│   ├── pcos_model.pkl
-│   ├── prostate_model.pkl
-│   └── thyroid_model.pkl
-└── README.md
-```
+🚀 How I Developed This Project
 
----
+The goal of this project was to create a single platform capable of analyzing multiple diseases simultaneously instead of building separate predictors.
 
-## ⚡ Step-by-Step Setup
+To achieve this, I designed a Flask-based backend that connects seven different machine learning models trained for different diseases.
 
-### Step 1 — Install Python & Flask
+These models analyze user inputs such as:
 
-Make sure you have Python 3.8+ installed. Then:
+Age
+Gender
+Height & Weight
+Lifestyle habits (smoking, alcohol, activity level)
+Symptoms (fatigue, chest pain, blood pressure, etc.)
 
-```bash
-pip install flask numpy scikit-learn
-```
+The system converts these inputs into feature vectors that match the format expected by each trained model.
 
-### Step 2 — Run the server
+Each model then calculates a probability score using predict_proba(), and the backend aggregates these results into a disease risk dashboard.
 
-```bash
-cd disease_predictor
-python app.py
-```
+🧠 Diseases Predicted
 
-You will see:
-```
-🏥 Disease Risk Predictor starting...
-   Models loaded: ['pcos', 'thyroid', 'liver', 'breast', 'heart', 'prostate', 'diabetes']
- * Running on http://127.0.0.1:5000
-```
+The application currently predicts risk for 7 diseases:
 
-### Step 3 — Open in browser
+• PCOS
+• Thyroid Disorders
+• Liver Disease
+• Breast Cancer
+• Heart Disease
+• Prostate Cancer
+• Diabetes
 
-Go to: **http://localhost:5000**
+Each disease is predicted using its own trained ML model, allowing more specialized predictions.
 
----
+⚙️ Technology Stack
+Backend
+Python
+Flask
+NumPy
+Scikit-learn
+Machine Learning
+Multiple trained classification models
+Probability-based prediction (predict_proba)
+Feature engineering for symptom mapping
+Frontend
+HTML
+CSS
+JavaScript
+Interactive animated result cards
+Deployment
+Render Cloud Platform
+🧬 Smart Gender-Aware Risk Scoring
 
-## 🔁 How It Works (Code Flow)
+Some diseases affect genders differently.
+To make predictions more realistic, I implemented gender-based weighting.
 
-```
-Browser (HTML form)
-        │
-        │  POST /predict  (form data)
-        ▼
-   app.py — Flask route
-        │
-        ├── symptoms_to_features()
-        │     Converts ~40 symptom answers → 150+ feature values
-        │     that each model expects
-        │
-        ├── For each model (breast, diabetes, heart, liver, pcos, prostate, thyroid):
-        │     Load .pkl  →  build feature array  →  predict_proba()
-        │     Apply gender weight (e.g. prostate=0 for females)
-        │
-        └── Return JSON with per-disease risk % + overall score
-        
-Browser renders animated result cards
-```
+For example:
 
----
+Disease	Female	Male
+Breast Cancer	High relevance	Ignored
+PCOS	High relevance	Ignored
+Thyroid	Higher	Moderate
+Heart	Moderate	Higher
+Prostate	Ignored	High
 
-## 🌐 API Endpoint
+This ensures the overall risk score reflects realistic medical probabilities.
 
-**POST `/predict`** — Form data fields:
+📊 How the Prediction Pipeline Works
 
-| Field | Type | Description |
-|-------|------|-------------|
-| name | string | Patient name |
-| gender | `female` / `male` | Biological sex |
-| age | int | 18–100 |
-| height | int | cm |
-| weight | float | kg |
-| waist | int | inches |
-| smoking | 0/1 | Smoker? |
-| alcohol | 0–3 | Intake level |
-| activity | 0–3 | Exercise level |
-| bp_high | 0–3 | Blood pressure |
-| chest_pain | 0–3 | Chest pain severity |
-| fatigue | 0–3 | Fatigue level |
-| ... | | (and 30+ more symptom fields) |
+User enters health data →
 
-**Response JSON:**
-```json
-{
-  "success": true,
-  "patient": "Priya Sharma",
-  "gender": "female",
-  "overall": 43.7,
-  "o_level": "MODERATE",
-  "results": [
-    { "name": "PCOS", "risk": 95.9, "level": "CRITICAL", "color": "#7f1d1d" },
-    { "name": "Heart Disease", "risk": 74.6, "level": "CRITICAL" },
-    ...
-  ]
-}
-```
+Flask backend processes the form →
 
----
+Symptoms are converted into model features →
 
-## 🧬 Gender-Aware Risk Scoring
+Each ML model generates a probability score →
 
-| Disease | Female Weight | Male Weight |
-|---------|:---:|:---:|
-| Breast Cancer | 1.0 | 0.0 |
-| PCOS | 0.9 | 0.0 |
-| Thyroid | 0.9 | 0.5 |
-| Heart | 0.7 | 0.9 |
-| Prostate | 0.0 | 1.0 |
-| Diabetes | 0.6 | 0.7 |
-| Liver | 0.6 | 0.8 |
+Scores are weighted based on gender →
 
----
+Results are returned as risk percentages and severity levels
 
-## ⚠️ Disclaimer
+The frontend then displays the results using visual risk cards and an overall health risk score.
 
-This tool is for educational purposes only. Not a substitute for professional medical advice.
+🎯 Key Features
+
+✔ Predicts 7 diseases simultaneously
+✔ Gender-aware risk calculation
+✔ Interactive UI with animated results
+✔ Works directly from symptom inputs
+✔ Cloud deployed and publicly accessible
+
+⚠️ Disclaimer
+
+This project is designed for educational and demonstration purposes only.
+
+It should not be used as a medical diagnosis tool.
+Always consult qualified healthcare professionals for medical advice.

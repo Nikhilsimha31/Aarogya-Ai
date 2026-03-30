@@ -3,9 +3,11 @@
 🔗 **Live Application:**  
 https://aarogya-ai-09ha.onrender.com/
 
-MediScan AI is a machine learning powered healthcare web application that predicts the risk of multiple diseases using a person's symptoms, lifestyle factors, and health indicators.
+MediScan AI is an AI-powered healthcare web application designed to estimate potential disease risks based on a person’s health data, lifestyle habits, symptoms, and medical history.
 
-I developed this project to explore how Artificial Intelligence can assist in early disease risk estimation using structured health data. The platform integrates multiple trained machine learning models into a single intelligent diagnostic system.
+I developed this project to explore how Artificial Intelligence can assist in early disease risk estimation using structured health data. The platform integrates multiple trained machine learning models and computer vision into a single intelligent diagnostic system.
+
+The system combines multiple machine learning models and image classification to provide a comprehensive health risk overview.
 
 ---
 
@@ -13,7 +15,7 @@ I developed this project to explore how Artificial Intelligence can assist in ea
 
 The goal of this project was to build a unified disease prediction platform rather than creating separate tools for each disease.
 
-The system collects health information from users through an interactive medical questionnaire and processes this data using seven different machine learning models.
+The system collects health information from users through an interactive medical questionnaire and processes this data using multiple trained machine learning models.
 
 Each model focuses on predicting the risk of a specific disease based on the provided inputs.
 
@@ -24,6 +26,37 @@ After analyzing the data, the system generates:
 • An overall health risk score  
 
 The results are displayed in an interactive health dashboard.
+
+---
+
+# 🧠 How the System Works
+
+The platform collects structured medical information from users through a guided multi-section interface and analyzes it using trained machine learning models.
+
+The analysis includes:
+
+• Symptom-based disease prediction  
+• Lifestyle risk analysis  
+• Gender-aware risk scoring  
+• Lung disease detection using X-ray image classification  
+
+The system then generates risk percentages and severity levels for multiple diseases.
+
+The prediction pipeline works as follows:
+
+User enters health data  
+↓  
+Flask backend receives form data  
+↓  
+Symptoms are converted into feature vectors  
+↓  
+Each ML model calculates probability using `predict_proba()`  
+↓  
+Gender-based weights adjust predictions  
+↓  
+System calculates overall health risk score  
+↓  
+Frontend displays animated risk cards
 
 ---
 
@@ -39,29 +72,173 @@ The system currently predicts risk for the following diseases:
 • Prostate Disease  
 • Diabetes  
 
-Each disease uses its own trained machine learning model, allowing more specialized predictions.
+Additionally, the platform includes:
+
+🫁 **Lung Disease Detection using X-ray Image Classification**
 
 ---
 
-# ⚙️ How the System Works
+# 1️⃣ Personal Identity
 
-The prediction pipeline works as follows:
+This section collects basic demographic and biological information that significantly affects disease risk.
 
-User enters health data  
-↓  
-Flask backend receives the form data  
-↓  
-Symptoms are converted into feature vectors  
-↓  
-Each ML model runs prediction using predict_proba()  
-↓  
-Gender-based weights adjust prediction probabilities  
-↓  
-System calculates overall health risk score  
-↓  
-Frontend displays results using visual risk cards
+### Information Collected
 
-This architecture allows the system to analyze multiple diseases simultaneously from a single form.
+• Full Name  
+• Age  
+• Biological Sex  
+
+### Why This Matters
+
+Age and biological sex influence the probability of many diseases.
+
+Examples:
+
+Female-specific risks: PCOS, Breast Cancer, Hormonal disorders  
+Male-specific risks: Prostate disease  
+Age-related risks: Heart disease, diabetes, thyroid disorders  
+
+This information helps the AI system apply **gender-aware weighting when calculating risks**.
+
+---
+
+# 2️⃣ Body Measurements
+
+This section gathers physical health indicators used by many medical prediction models.
+
+### Physical Metrics
+
+• Height  
+• Weight  
+• Waist circumference  
+
+From these values the system calculates **Body Mass Index (BMI)**.
+
+BMI helps estimate risks for:
+
+• Diabetes  
+• Heart disease  
+• Hormonal imbalance  
+• Liver disease  
+
+### Known Medical Conditions
+
+Users can also indicate existing diagnoses such as:
+
+• Hypertension  
+• Diabetes  
+
+These conditions significantly influence disease prediction models.
+
+---
+
+# 3️⃣ Symptoms & Medical History
+
+This is the core diagnostic section of the system.
+
+Users report symptoms across several medical categories.
+
+### Lifestyle
+
+• Smoking habits  
+• Alcohol consumption  
+• Physical activity  
+• Diet quality  
+• Stress levels  
+• Sleep duration  
+
+Lifestyle factors strongly influence risks for **heart disease, liver disease, and diabetes**.
+
+---
+
+### Heart & Cardiovascular
+
+• Chest pain  
+• Chest pressure  
+• Heart palpitations  
+• Irregular heartbeat  
+• Shortness of breath  
+• Leg swelling  
+
+These indicators help estimate the probability of **cardiovascular disease**.
+
+---
+
+### Diabetes Indicators
+
+• Fatigue  
+• Weight fluctuations  
+• Lifestyle factors  
+• Known diabetes diagnosis  
+
+Used by the **diabetes prediction model**.
+
+---
+
+### Liver Health
+
+• Alcohol intake  
+• Abdominal discomfort  
+• Lifestyle risk factors  
+
+These inputs are analyzed by the **liver disease prediction model**.
+
+---
+
+### Kidney Health
+
+• Reduced urine output  
+• Blood in urine  
+• Foamy urine  
+• Lower back pain  
+• Swelling around eyes or legs  
+
+These symptoms help identify **possible kidney function issues**.
+
+---
+
+### Hormonal Health (PCOS)
+
+• Menstrual irregularities  
+• Weight gain  
+• Hormonal imbalance indicators  
+
+These are used by the **PCOS prediction model**.
+
+---
+
+### Breast Health
+
+• Breast discomfort  
+• Family history indicators  
+
+These factors contribute to **breast cancer risk prediction**.
+
+---
+
+### Thyroid Indicators
+
+• Fatigue  
+• Metabolism-related symptoms  
+• Hormonal signals  
+
+These inputs help evaluate **thyroid disorder risk**.
+
+---
+
+# 🫁 Lung Disease Detection (Image Classification)
+
+In addition to symptom-based prediction, MediScan AI also supports **lung disease detection from chest X-ray images**.
+
+Users can upload an X-ray image, and the system analyzes it using deep learning based image classification.
+
+The model detects patterns related to:
+
+• Pneumonia  
+• Normal lungs  
+• Other lung abnormalities depending on the dataset.
+
+This adds **computer vision capability** to the medical prediction system.
 
 ---
 
@@ -96,7 +273,7 @@ After processing the inputs, the backend returns prediction results in JSON form
 }
 ```
 
-The frontend converts this JSON response into visual disease risk cards.
+The frontend converts this JSON response into visual risk cards.
 
 ---
 
@@ -114,23 +291,7 @@ Certain diseases affect genders differently. To make predictions more realistic,
 | Diabetes | 0.6 | 0.7 |
 | Liver Disease | 0.6 | 0.8 |
 
-These weights adjust the prediction probability to reflect realistic medical patterns.
-
----
-
-# 🫁 Lung Disease Detection
-
-In addition to symptom-based prediction, the platform also includes lung disease detection using chest X-ray image classification.
-
-Users can upload an X-ray image, and the model analyzes it using deep learning techniques.
-
-The model detects patterns related to:
-
-• Pneumonia  
-• Normal lungs  
-• Other lung abnormalities depending on the dataset used for training.
-
-This feature integrates computer vision with the machine learning prediction system.
+These weights adjust prediction probabilities to reflect realistic medical patterns.
 
 ---
 
@@ -158,7 +319,7 @@ disease_predictor/
 └── README.md
 ```
 
-Each `.pkl` file represents a trained machine learning model used for predicting disease risk.
+Each `.pkl` file represents a trained machine learning model used for disease prediction.
 
 ---
 
@@ -172,7 +333,7 @@ Scikit-learn
 
 Machine Learning  
 Multiple classification models  
-Probability-based predictions (predict_proba)  
+Probability-based predictions (`predict_proba`)  
 Feature engineering for symptom mapping  
 
 Computer Vision  
@@ -190,10 +351,10 @@ Render Cloud Platform
 
 # 🎯 Key Features
 
-• Predicts risk for multiple diseases simultaneously  
-• Uses multiple machine learning models  
+• Predicts multiple diseases simultaneously  
+• Machine learning powered health predictions  
+• Symptom-based medical risk analysis  
 • Gender-aware risk scoring system  
-• Symptom-based medical analysis  
 • Lung disease detection from X-ray images  
 • Interactive health dashboard  
 • Cloud deployed AI healthcare application  

@@ -1,205 +1,207 @@
-**🏥 MediScan AI — Intelligent Disease Risk Predictor**
+# 🏥 MediScan AI — AI Disease Risk Prediction System
 
-🔗 Live Application:
+🔗 **Live Application:**  
 https://aarogya-ai-09ha.onrender.com/
 
-MediScan AI is an AI-powered healthcare web application designed to estimate potential disease risks based on a person’s health data, lifestyle habits, symptoms, and medical history.
+MediScan AI is a machine learning powered healthcare web application that predicts the risk of multiple diseases using a person's symptoms, lifestyle factors, and health indicators.
 
-The system combines multiple machine learning models and image classification to provide a comprehensive health risk overview.
+I developed this project to explore how Artificial Intelligence can assist in early disease risk estimation using structured health data. The platform integrates multiple trained machine learning models into a single intelligent diagnostic system.
 
-🧠 How the System Works
+---
 
-The platform collects structured medical information from users through a guided multi-section interface and analyzes it using trained machine learning models.
+# 🚀 Project Overview
 
-The analysis includes:
+The goal of this project was to build a unified disease prediction platform rather than creating separate tools for each disease.
 
-• Symptom-based disease prediction
-• Lifestyle risk analysis
-• Gender-aware risk scoring
-• Lung disease detection using X-ray image classification
+The system collects health information from users through an interactive medical questionnaire and processes this data using seven different machine learning models.
 
-The system then generates risk percentages and severity levels for multiple diseases.
+Each model focuses on predicting the risk of a specific disease based on the provided inputs.
 
-1️⃣ Personal Identity
+After analyzing the data, the system generates:
 
-This section collects basic demographic and biological information that significantly affects disease risk.
+• Individual disease risk percentages  
+• Severity levels  
+• An overall health risk score  
 
-Information Collected
+The results are displayed in an interactive health dashboard.
 
-• Full Name
-• Age
-• Biological Sex
+---
 
-Why This Matters
+# 🧠 Diseases Predicted
 
-Age and biological sex influence the probability of many diseases.
+The system currently predicts risk for the following diseases:
 
-Examples:
+• PCOS  
+• Thyroid Disorders  
+• Liver Disease  
+• Breast Cancer  
+• Heart Disease  
+• Prostate Disease  
+• Diabetes  
 
-Female-specific risks: PCOS, Breast Cancer, Hormonal disorders
-Male-specific risks: Prostate disease
-Age-related risks: Heart disease, diabetes, thyroid disorders
+Each disease uses its own trained machine learning model, allowing more specialized predictions.
 
-This information helps the AI system apply gender-aware weighting when calculating risks.
+---
 
-2️⃣ Body Measurements
+# ⚙️ How the System Works
 
-This section gathers physical health indicators used by many medical prediction models.
+The prediction pipeline works as follows:
 
-Physical Metrics
+User enters health data  
+↓  
+Flask backend receives the form data  
+↓  
+Symptoms are converted into feature vectors  
+↓  
+Each ML model runs prediction using predict_proba()  
+↓  
+Gender-based weights adjust prediction probabilities  
+↓  
+System calculates overall health risk score  
+↓  
+Frontend displays results using visual risk cards
 
-• Height
-• Weight
-• Waist circumference
+This architecture allows the system to analyze multiple diseases simultaneously from a single form.
 
-From these values the system calculates Body Mass Index (BMI).
+---
 
-BMI helps estimate risks for:
+# 📡 Example API Response
 
-Diabetes
-Heart disease
-Hormonal imbalance
-Liver disease
-Known Medical Conditions
+After processing the inputs, the backend returns prediction results in JSON format.
 
-Users can also indicate existing diagnoses such as:
+```json
+{
+  "success": true,
+  "patient": "Priya Sharma",
+  "gender": "female",
+  "overall": 43.7,
+  "o_level": "MODERATE",
+  "results": [
+    {
+      "name": "PCOS",
+      "risk": 95.9,
+      "level": "CRITICAL"
+    },
+    {
+      "name": "Heart Disease",
+      "risk": 74.6,
+      "level": "CRITICAL"
+    },
+    {
+      "name": "Diabetes",
+      "risk": 21.4,
+      "level": "LOW"
+    }
+  ]
+}
+```
 
-• Hypertension
-• Diabetes
+The frontend converts this JSON response into visual disease risk cards.
 
-These conditions significantly influence disease prediction models.
+---
 
-3️⃣ Symptoms & Medical History
+# 🧬 Gender-Aware Risk Scoring
 
-This is the core diagnostic section of the system.
+Certain diseases affect genders differently. To make predictions more realistic, the system applies gender-based weighting.
 
-Users report symptoms across several medical categories.
+| Disease | Female Weight | Male Weight |
+|--------|--------|--------|
+| Breast Cancer | 1.0 | 0.0 |
+| PCOS | 0.9 | 0.0 |
+| Thyroid | 0.9 | 0.5 |
+| Heart Disease | 0.7 | 0.9 |
+| Prostate Disease | 0.0 | 1.0 |
+| Diabetes | 0.6 | 0.7 |
+| Liver Disease | 0.6 | 0.8 |
 
-Lifestyle
+These weights adjust the prediction probability to reflect realistic medical patterns.
 
-• Smoking habits
-• Alcohol consumption
-• Physical activity
-• Diet quality
-• Stress levels
-• Sleep duration
+---
 
-Lifestyle factors strongly influence risks for heart disease, liver disease, and diabetes.
+# 🫁 Lung Disease Detection
 
-Heart & Cardiovascular
+In addition to symptom-based prediction, the platform also includes lung disease detection using chest X-ray image classification.
 
-• Chest pain
-• Chest pressure
-• Heart palpitations
-• Irregular heartbeat
-• Shortness of breath
-• Leg swelling
+Users can upload an X-ray image, and the model analyzes it using deep learning techniques.
 
-These indicators help estimate the probability of cardiovascular disease.
+The model detects patterns related to:
 
-Diabetes Indicators
+• Pneumonia  
+• Normal lungs  
+• Other lung abnormalities depending on the dataset used for training.
 
-• Fatigue
-• Weight fluctuations
-• Lifestyle factors
-• Known diabetes diagnosis
+This feature integrates computer vision with the machine learning prediction system.
 
-Used by the diabetes prediction model.
+---
 
-Liver Health
+# 🏗 Project Structure
 
-• Alcohol intake
-• Abdominal discomfort
-• Lifestyle risk factors
+```
+disease_predictor/
+│
+├── app.py
+│   Flask backend server handling prediction logic
+│
+├── templates/
+│   └── index.html
+│   Frontend user interface
+│
+├── models/
+│   ├── breast_model.pkl
+│   ├── diabetes_model.pkl
+│   ├── heart_model.pkl
+│   ├── liver_model.pkl
+│   ├── pcos_model.pkl
+│   ├── prostate_model.pkl
+│   └── thyroid_model.pkl
+│
+└── README.md
+```
 
-These inputs are analyzed by the liver disease prediction model.
+Each `.pkl` file represents a trained machine learning model used for predicting disease risk.
 
-Kidney Health
+---
 
-• Reduced urine output
-• Blood in urine
-• Foamy urine
-• Lower back pain
-• Swelling around eyes or legs
+# 💻 Technology Stack
 
-These symptoms help identify possible kidney function issues.
+Backend  
+Python  
+Flask  
+NumPy  
+Scikit-learn  
 
-Hormonal Health (PCOS)
+Machine Learning  
+Multiple classification models  
+Probability-based predictions (predict_proba)  
+Feature engineering for symptom mapping  
 
-• Menstrual irregularities
-• Weight gain
-• Hormonal imbalance indicators
+Computer Vision  
+Deep learning based lung X-ray image classification  
 
-These are used by the PCOS prediction model.
+Frontend  
+HTML  
+CSS  
+JavaScript  
 
-Breast Health
+Deployment  
+Render Cloud Platform
 
-• Breast discomfort
-• Family history indicators
+---
 
-These factors contribute to breast cancer risk prediction.
+# 🎯 Key Features
 
-Thyroid Indicators
+• Predicts risk for multiple diseases simultaneously  
+• Uses multiple machine learning models  
+• Gender-aware risk scoring system  
+• Symptom-based medical analysis  
+• Lung disease detection from X-ray images  
+• Interactive health dashboard  
+• Cloud deployed AI healthcare application  
 
-• Fatigue
-• Metabolism-related symptoms
-• Hormonal signals
+---
 
-These inputs help evaluate thyroid disorder risk.
+# ⚠️ Disclaimer
 
-🫁 Lung Disease Detection (Image Classification)
+This project is intended for educational and demonstration purposes only.
 
-In addition to symptom-based prediction, MediScan AI also includes lung disease detection using chest X-ray images.
-
-Users can upload a medical image, and the system analyzes it using deep learning image classification.
-
-The model can detect patterns related to:
-
-• Pneumonia
-• Normal lungs
-• Other lung abnormalities depending on training data.
-
-This feature integrates computer vision with medical prediction models.
-
-🧬 Diseases Predicted
-
-The platform currently evaluates risk for:
-
-• PCOS
-• Thyroid Disorders
-• Liver Disease
-• Breast Cancer
-• Heart Disease
-• Prostate Disease
-• Diabetes
-
-Plus:
-
-🫁 Lung disease detection via X-ray image analysis
-
-⚙️ Technology Stack
-Backend
-
-Python
-Flask
-NumPy
-Scikit-learn
-
-Machine Learning
-
-Multiple trained classification models
-Probability-based predictions
-
-Computer Vision
-
-Deep learning image classification for lung scans
-
-Frontend
-
-HTML
-CSS
-JavaScript
-
-Deployment
-
-Render Cloud Platform**
+It should not be used as a medical diagnosis tool. Always consult a qualified healthcare professional for medical advice.

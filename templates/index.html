@@ -1,0 +1,2643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AAROGYA AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#030810;--surface:#081224;--card:#0c1830;--border:#162840;--border2:#1e3a5c;
+  --accent:#00d4ff;--accent2:#7c3aed;--accent3:#00ff9d;--pink:#f43f8e;--blue:#3b82f6;
+  --green:#10b981;--yellow:#f59e0b;--red:#ef4444;
+  --text:#e2eeff;--text2:#7a9bbf;--muted:#3d5a7a;
+  --fd:'Outfit',sans-serif;--fb:'Space Grotesk',sans-serif;}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--fb);min-height:100vh;overflow-x:hidden}
+/* ==================== LOADING SCREEN ==================== */
+#aarogya-loader{position:fixed;inset:0;z-index:99999;background:#030810;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  transition:opacity .8s ease,visibility .8s ease;overflow:hidden;}
+#aarogya-loader.hide{opacity:0;visibility:hidden;pointer-events:none;}
+
+/* animated grid bg */
+#aarogya-loader::before{content:'';position:absolute;inset:0;
+  background:linear-gradient(rgba(0,212,255,.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,212,255,.03) 1px,transparent 1px);
+  background-size:44px 44px;animation:gridMove 8s linear infinite;}
+@keyframes gridMove{0%{background-position:0 0}100%{background-position:44px 44px}}
+
+/* glowing orbs */
+#aarogya-loader::after{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 60% 50% at 20% 20%,rgba(0,212,255,.08) 0%,transparent 60%),
+    radial-gradient(ellipse 50% 40% at 80% 80%,rgba(124,58,237,.08) 0%,transparent 60%);
+  pointer-events:none;}
+
+.loader-inner{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:2rem;}
+
+/* logo */
+.loader-logo-wrap{display:flex;align-items:center;gap:1rem;animation:fadeSlideDown .8s ease both;}
+@keyframes fadeSlideDown{from{opacity:0;transform:translateY(-24px)}to{opacity:1;transform:none}}
+.loader-icon{width:52px;height:52px;border-radius:14px;
+  background:linear-gradient(135deg,#00d4ff,#7c3aed);
+  display:grid;place-items:center;font-size:1.6rem;
+  box-shadow:0 0 32px rgba(0,212,255,.5),0 0 64px rgba(124,58,237,.3);}
+.loader-brand{font-family:'Outfit',sans-serif;font-size:2rem;font-weight:900;
+  background:linear-gradient(90deg,#00d4ff,#7c3aed);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.loader-tagline{font-size:.7rem;color:#3d5a7a;letter-spacing:.15em;text-transform:uppercase;margin-top:2px;}
+
+/* pulse ring around icon */
+.loader-icon-wrap{position:relative;}
+.loader-ring{position:absolute;inset:-8px;border-radius:20px;
+  border:1.5px solid rgba(0,212,255,.4);animation:ringPulse 2s ease-in-out infinite;}
+.loader-ring2{position:absolute;inset:-16px;border-radius:24px;
+  border:1px solid rgba(124,58,237,.25);animation:ringPulse 2s ease-in-out infinite .4s;}
+@keyframes ringPulse{0%,100%{opacity:.6;transform:scale(1)}50%{opacity:.1;transform:scale(1.08)}}
+
+/* rotating messages */
+.loader-messages{height:28px;overflow:hidden;position:relative;width:320px;text-align:center;
+  animation:fadeSlideDown .8s ease .2s both;}
+.loader-msg{position:absolute;width:100%;left:0;font-size:.82rem;color:#7a9bbf;
+  transition:all .5s ease;letter-spacing:.02em;}
+.loader-msg.active{opacity:1;transform:translateY(0);}
+.loader-msg.exit{opacity:0;transform:translateY(-20px);}
+.loader-msg.enter{opacity:0;transform:translateY(20px);}
+
+/* progress bar */
+.loader-bar-wrap{width:300px;animation:fadeSlideDown .8s ease .35s both;}
+.loader-bar-track{height:3px;background:rgba(0,212,255,.1);border-radius:99px;overflow:hidden;}
+.loader-bar-fill{height:100%;width:0%;border-radius:99px;
+  background:linear-gradient(90deg,#00d4ff,#7c3aed);
+  transition:width .4s ease;
+  box-shadow:0 0 10px rgba(0,212,255,.6);}
+.loader-bar-pct{font-size:.65rem;color:#3d5a7a;text-align:right;margin-top:.4rem;}
+
+/* floating stat chips */
+.loader-chips{display:flex;gap:.7rem;flex-wrap:wrap;justify-content:center;max-width:340px;
+  animation:fadeSlideDown .8s ease .5s both;}
+.loader-chip{padding:.3rem .75rem;border-radius:99px;
+  border:1px solid rgba(0,212,255,.15);background:rgba(0,212,255,.05);
+  font-size:.65rem;color:#7a9bbf;display:flex;align-items:center;gap:.4rem;}
+.loader-chip span{width:6px;height:6px;border-radius:50%;background:#00d4ff;
+  display:inline-block;animation:chipBlink 1.5s ease-in-out infinite;}
+.loader-chip:nth-child(2) span{background:#7c3aed;animation-delay:.3s;}
+.loader-chip:nth-child(3) span{background:#10b981;animation-delay:.6s;}
+.loader-chip:nth-child(4) span{background:#f59e0b;animation-delay:.9s;}
+.loader-chip:nth-child(5) span{background:#f43f8e;animation-delay:1.2s;}
+@keyframes chipBlink{0%,100%{opacity:1}50%{opacity:.2}}
+/* ==================== END LOADING SCREEN ==================== */
+
+body::before{content:'';position:fixed;inset:0;z-index:0;
+  background:radial-gradient(ellipse 70% 40% at 15% 5%,rgba(0,212,255,.06) 0%,transparent 55%),
+    radial-gradient(ellipse 50% 35% at 85% 90%,rgba(124,58,237,.06) 0%,transparent 55%),
+    linear-gradient(rgba(0,212,255,.018) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,212,255,.018) 1px,transparent 1px);
+  background-size:100% 100%,100% 100%,44px 44px,44px 44px;pointer-events:none;}
+header{position:sticky;top:0;z-index:200;height:62px;display:flex;align-items:center;
+  padding:0 2rem;background:rgba(3,8,16,.92);backdrop-filter:blur(24px);
+  border-bottom:1px solid rgba(0,212,255,.12);}
+.logo-icon{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:grid;place-items:center;font-size:1.15rem;box-shadow:0 0 18px rgba(0,212,255,.35);margin-right:.8rem;}
+.logo-name{font-family:var(--fd);font-size:1.15rem;font-weight:900;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.logo-sub{font-size:.6rem;color:var(--muted)}
+.wrap{position:relative;z-index:5;max-width:1020px;margin:0 auto;padding:2rem 1.5rem 6rem}
+.hero{text-align:center;padding:3rem 1rem 2.5rem}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:.5rem;
+  background:linear-gradient(90deg,rgba(0,212,255,.1),rgba(124,58,237,.1));
+  border:1px solid rgba(0,212,255,.2);padding:5px 16px;border-radius:999px;
+  font-size:.72rem;font-weight:700;color:var(--accent);letter-spacing:.1em;text-transform:uppercase;margin-bottom:1.2rem;}
+.hero h1{font-family:var(--fd);font-size:clamp(2rem,5vw,3.4rem);font-weight:900;line-height:1.05;letter-spacing:-.03em;margin-bottom:.9rem;}
+.hl{background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 50%,var(--pink) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.hero p{color:var(--text2);font-size:1rem;max-width:530px;margin:0 auto 1.8rem;line-height:1.65}
+.hero-chips{display:flex;justify-content:center;gap:.6rem;flex-wrap:wrap;margin-bottom:1rem}
+.hero-chip{padding:4px 14px;border-radius:999px;font-size:.72rem;font-weight:600;
+  background:rgba(255,255,255,.04);border:1px solid var(--border2);color:var(--text2);}
+.sec-heading{display:flex;align-items:center;gap:.8rem;margin-bottom:1.3rem;}
+.shn{width:32px;height:32px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:grid;place-items:center;font-family:var(--fd);font-size:.8rem;font-weight:900;color:#fff;
+  box-shadow:0 0 14px rgba(0,212,255,.3);}
+.shn-done{background:linear-gradient(135deg,var(--accent3),#00c77a)!important;box-shadow:0 0 14px rgba(0,255,157,.3)!important}
+.sec-heading-text h2{font-family:var(--fd);font-size:1.05rem;font-weight:800;
+  background:linear-gradient(90deg,var(--text),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.sec-heading-text p{font-size:.72rem;color:var(--muted);margin-top:2px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:1.7rem;margin-bottom:2rem;
+  position:relative;overflow:hidden;transition:border-color .25s,box-shadow .25s;}
+.card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,rgba(0,212,255,.2),transparent)}
+.card:hover{border-color:var(--border2);box-shadow:0 12px 50px rgba(0,0,0,.4)}
+.sub-label{display:flex;align-items:center;gap:.6rem;margin:1.4rem 0 .9rem;}
+.sub-label-line{flex:1;height:1px;background:linear-gradient(90deg,rgba(0,212,255,.2),transparent)}
+.sub-label span{font-size:.65rem;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.12em;
+  background:rgba(0,212,255,.08);border:1px solid rgba(0,212,255,.18);padding:2px 10px;border-radius:999px;white-space:nowrap;}
+.sub-label:first-child{margin-top:0}
+.fg{display:grid;gap:1rem;grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+.fg2{grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
+.fg3{grid-template-columns:repeat(3,1fr)}
+.field{display:flex;flex-direction:column;gap:.3rem}
+.field label{font-size:.66rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;display:flex;align-items:center;gap:.3rem;}
+input[type=text],input[type=number],select{width:100%;background:rgba(255,255,255,.03);border:1px solid var(--border);
+  border-radius:10px;padding:.58rem .85rem;color:var(--text);font-family:var(--fb);font-size:.87rem;
+  transition:border-color .2s,box-shadow .2s,background .2s;-webkit-appearance:none;appearance:none;}
+input:focus,select:focus{outline:none;border-color:var(--accent);background:rgba(0,212,255,.04);box-shadow:0 0 0 3px rgba(0,212,255,.1);}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%233d5a7a' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right .75rem center;padding-right:2.2rem;cursor:pointer;}
+select option{background:#0c1830;color:#e2eeff}
+#bmi-display{margin-top:.6rem;padding:.45rem 1rem;border-radius:10px;font-size:.8rem;font-weight:600;width:fit-content;}
+.gender-grid{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-top:.3rem}
+.g-card{padding:.9rem 1rem;border-radius:12px;border:1px solid var(--border);background:rgba(255,255,255,.02);
+  cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:.25rem;position:relative;overflow:hidden;}
+.g-card::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .2s}
+.g-card .gc-icon{font-size:1.5rem;line-height:1}
+.g-card .gc-title{font-family:var(--fd);font-size:.88rem;font-weight:800;color:var(--muted);transition:color .2s}
+.g-card .gc-sub{font-size:.63rem;color:var(--muted);opacity:.6;text-align:center}
+.g-card.active.female{border-color:var(--pink);box-shadow:0 0 24px rgba(244,63,142,.15)}
+.g-card.active.female::before{background:rgba(244,63,142,.06);opacity:1}
+.g-card.active.female .gc-title{color:var(--pink)}
+.g-card.active.male{border-color:var(--blue);box-shadow:0 0 24px rgba(59,130,246,.15)}
+.g-card.active.male::before{background:rgba(59,130,246,.06);opacity:1}
+.g-card.active.male .gc-title{color:var(--blue)}
+.tab-bar{display:flex;gap:.25rem;flex-wrap:wrap;padding:.45rem;background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:1.5rem;}
+.tb{padding:.38rem .85rem;border-radius:9px;font-size:.73rem;font-weight:700;background:transparent;border:none;
+  color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:.3rem;}
+.tb:hover{color:var(--text);background:rgba(255,255,255,.05)}
+.tb.on{background:linear-gradient(135deg,rgba(0,212,255,.15),rgba(124,58,237,.1));color:var(--accent);border:1px solid rgba(0,212,255,.2)}
+.tb .td{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.7;flex-shrink:0}
+.tb.ftab,.tp.ftab{display:none}
+.tb.mtab,.tp.mtab{display:none}
+body.gf .tb.ftab{display:flex}
+body.gf .tp.ftab.on{display:block}
+body.gm .tb.mtab{display:flex}
+body.gm .tp.mtab.on{display:block}
+.tp{display:none}
+.tp.on{display:block;animation:tpIn .18s ease}
+@keyframes tpIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.predict-btn{width:100%;padding:1.1rem 2rem;background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border:none;border-radius:14px;font-family:var(--fd);font-size:1.1rem;font-weight:900;color:#fff;cursor:pointer;
+  letter-spacing:.03em;box-shadow:0 8px 32px rgba(0,212,255,.3);transition:all .2s;position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;gap:.6rem;}
+.predict-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.18),transparent)}
+.predict-btn::after{content:'';position:absolute;top:-50%;left:-70%;width:50%;height:200%;
+  background:rgba(255,255,255,.12);transform:skewX(-20deg);transition:left .5s}
+.predict-btn:hover::after{left:130%}
+.predict-btn:hover{transform:translateY(-2px);box-shadow:0 14px 44px rgba(0,212,255,.4)}
+#loading{display:none;text-align:center;padding:4rem 2rem}
+.tri-loader{width:70px;height:70px;margin:0 auto 1.2rem;position:relative}
+.tri-ring{position:absolute;inset:0;border-radius:50%;border:3px solid transparent;animation:spin 1.1s linear infinite}
+.tri-ring:nth-child(1){border-top-color:var(--accent)}
+.tri-ring:nth-child(2){border-right-color:var(--accent2);animation-duration:1.7s;inset:7px}
+.tri-ring:nth-child(3){border-bottom-color:var(--accent3);animation-duration:2.3s;inset:14px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.load-txt{color:var(--text2);font-size:.9rem;margin-top:.3rem}
+.load-txt em{color:var(--accent);font-style:normal;font-weight:700}
+#results{display:none}
+.overall-card{background:linear-gradient(135deg,#091e3c,#050e1e);border:1px solid rgba(0,212,255,.25);
+  border-radius:20px;padding:2.2rem;margin-bottom:2rem;display:flex;align-items:center;gap:2rem;flex-wrap:wrap;
+  position:relative;overflow:hidden;}
+.overall-card::before{content:'';position:absolute;top:-60px;right:-60px;width:220px;height:220px;border-radius:50%;
+  background:radial-gradient(circle,rgba(0,212,255,.1),transparent 65%)}
+.score-ring-area{position:relative;flex-shrink:0}
+.score-ring-area svg{display:block}
+.score-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.score-num{font-family:var(--fd);font-size:2rem;font-weight:900;line-height:1}
+.score-unit{font-size:.65rem;color:var(--muted);margin-top:2px}
+.ov-tag{display:inline-flex;align-items:center;font-size:.63rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem;}
+.ov-level{font-family:var(--fd);font-size:1.7rem;font-weight:900;line-height:1.1;margin-bottom:.5rem}
+.ov-patient{font-size:.88rem;color:var(--text2);display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+.ptag{padding:2px 10px;border-radius:999px;font-size:.68rem;font-weight:700}
+.d-grid{display:grid;gap:1rem;grid-template-columns:repeat(auto-fill,minmax(275px,1fr));margin-bottom:1.5rem}
+.dc{background:var(--surface);border:1px solid var(--border);border-radius:15px;padding:1.2rem 1.4rem;
+  animation:dcIn .4s ease both;transition:transform .2s,box-shadow .2s;}
+.dc:hover{transform:translateY(-3px);box-shadow:0 14px 36px rgba(0,0,0,.4)}
+@keyframes dcIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+.dc-top{display:flex;align-items:center;gap:.7rem;margin-bottom:1rem}
+.dc-icon{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:1.1rem;flex-shrink:0}
+.dc-name{font-family:var(--fd);font-size:.94rem;font-weight:800;flex:1}
+.dc-badge{padding:2px 9px;border-radius:999px;font-size:.6rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.dc-bar{height:7px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden;margin-bottom:.65rem}
+.dc-fill{height:100%;border-radius:4px;width:0;transition:width 1.3s cubic-bezier(.4,0,.2,1)}
+.dc-bottom{display:flex;align-items:flex-end;justify-content:space-between}
+.dc-pct{font-family:var(--fd);font-size:1.4rem;font-weight:900}
+.dc-meta{font-size:.66rem;color:var(--muted);text-align:right;line-height:1.4}
+.disclaimer{background:rgba(245,158,11,.05);border:1px solid rgba(245,158,11,.18);
+  border-radius:12px;padding:1rem 1.3rem;font-size:.74rem;color:rgba(245,158,11,.9);
+  line-height:1.6;display:flex;gap:.6rem;align-items:flex-start;margin-bottom:1rem;}
+
+/* PDF Report Button */
+.report-btn-wrap{display:flex;justify-content:flex-end;margin-bottom:1.2rem;}
+.report-btn{display:inline-flex;align-items:center;gap:.55rem;padding:.7rem 1.6rem;
+  background:linear-gradient(135deg,rgba(0,255,157,.12),rgba(0,212,255,.08));
+  border:1px solid rgba(0,255,157,.35);border-radius:12px;
+  font-family:var(--fd);font-size:.82rem;font-weight:800;color:var(--accent3);
+  cursor:pointer;transition:all .2s;letter-spacing:.03em;}
+.report-btn:hover{background:linear-gradient(135deg,rgba(0,255,157,.22),rgba(0,212,255,.14));
+  box-shadow:0 6px 24px rgba(0,255,157,.2);transform:translateY(-1px);}
+.report-btn svg{width:15px;height:15px;flex-shrink:0}
+
+
+/* ---- Language Switcher ---- */
+.lang-switcher{margin-left:auto;display:flex;gap:.3rem;align-items:center;flex-wrap:wrap;}
+.lang-btn{padding:.28rem .6rem;border-radius:8px;border:1px solid var(--border2);
+  background:rgba(255,255,255,.03);color:var(--muted);font-size:.65rem;font-weight:700;
+  cursor:pointer;transition:all .2s;white-space:nowrap;font-family:var(--fb);}
+.lang-btn:hover{background:rgba(0,212,255,.1);color:var(--accent);}
+.lang-btn.active{background:linear-gradient(135deg,rgba(0,212,255,.2),rgba(124,58,237,.15));
+  color:var(--accent);border-color:rgba(0,212,255,.4);}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+@media(max-width:640px){.fg,.fg2,.fg3{grid-template-columns:1fr!important}.overall-card{flex-direction:column}.d-grid{grid-template-columns:1fr}header{padding:0 1rem}}
+
+/* PDF Language Modal */
+#pdfLangModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;align-items:center;justify-content:center;}
+#pdfLangModal.open{display:flex;}
+.pdf-modal-box{background:#0c1830;border:1px solid #1e3a5c;border-radius:16px;padding:2rem;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.6);}
+.pdf-modal-box h3{color:#00d4ff;font-family:'Rajdhani',sans-serif;font-size:1.3rem;margin:0 0 .4rem;}
+.pdf-modal-box p{color:#7a9bbf;font-size:.82rem;margin:0 0 1.2rem;}
+.pdf-lang-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:1.4rem;}
+.pdf-lang-opt{display:flex;align-items:center;gap:.5rem;padding:.55rem .8rem;border:1.5px solid #1e3a5c;border-radius:10px;cursor:pointer;transition:all .2s;}
+.pdf-lang-opt:hover{border-color:#00d4ff44;background:rgba(0,212,255,.05);}
+.pdf-lang-opt.selected{border-color:#00d4ff;background:rgba(0,212,255,.1);}
+.pdf-lang-opt input{accent-color:#00d4ff;width:15px;height:15px;}
+.pdf-lang-opt label{color:#e2eeff;font-size:.88rem;cursor:pointer;font-weight:600;}
+.pdf-modal-btns{display:flex;gap:.8rem;}
+.pdf-modal-btns button{flex:1;padding:.65rem;border-radius:10px;font-weight:700;font-size:.88rem;cursor:pointer;border:none;}
+.pdf-btn-cancel{background:#162840;color:#7a9bbf;}
+.pdf-btn-generate{background:linear-gradient(135deg,#00d4ff,#7c3aed);color:#fff;}
+.pdf-btn-generate:disabled{opacity:.5;cursor:not-allowed;}
+#pdfGenProgress{display:none;text-align:center;padding:.8rem 0 0;}
+#pdfGenProgress .pgbar{height:4px;background:#1e3a5c;border-radius:2px;margin:.5rem 0;}
+#pdfGenProgress .pgfill{height:100%;background:linear-gradient(90deg,#00d4ff,#7c3aed);border-radius:2px;transition:width .3s;}
+#pdfGenProgress p{color:#7a9bbf;font-size:.78rem;margin:0;}
+</style>
+</head>
+<body class="gf">
+
+<!-- ==================== LOADING SCREEN ==================== -->
+<div id="aarogya-loader">
+  <div class="loader-inner">
+
+    <!-- Logo -->
+    <div class="loader-logo-wrap">
+      <div class="loader-icon-wrap">
+        <div class="loader-ring"></div>
+        <div class="loader-ring2"></div>
+        <div class="loader-icon">🧬</div>
+      </div>
+      <div>
+        <div class="loader-brand">AAROGYA AI</div>
+        <div class="loader-tagline">Multi-Disease Intelligence Platform</div>
+      </div>
+    </div>
+
+    <!-- Rotating messages -->
+    <div class="loader-messages">
+      <div class="loader-msg active" id="lmsg">Loading ML models for accurate prediction...</div>
+    </div>
+
+    <!-- Progress bar -->
+    <div class="loader-bar-wrap">
+      <div class="loader-bar-track">
+        <div class="loader-bar-fill" id="loaderBar"></div>
+      </div>
+      <div class="loader-bar-pct" id="loaderPct">0%</div>
+    </div>
+
+    <!-- Chips -->
+    <div class="loader-chips">
+      <div class="loader-chip"><span></span>Heart Model</div>
+      <div class="loader-chip"><span></span>Diabetes Model</div>
+      <div class="loader-chip"><span></span>Liver Model</div>
+      <div class="loader-chip"><span></span>Thyroid Model</div>
+      <div class="loader-chip"><span></span>7 Models Active</div>
+    </div>
+
+  </div>
+</div>
+<!-- ==================== END LOADING SCREEN ==================== -->
+
+<!-- PDF Language Selector Modal -->
+<div id="pdfLangModal">
+  <div class="pdf-modal-box">
+    <h3>📄 Select Report Language(s)</h3>
+    <p>Choose one or more languages. Each language will appear as a separate section in the PDF.</p>
+    <div class="pdf-lang-grid">
+      <div class="pdf-lang-opt selected" onclick="togglePdfLang('en',this)">
+        <input type="checkbox" id="pll-en" checked> <label for="pll-en">🇬🇧 English</label>
+      </div>
+      <div class="pdf-lang-opt" onclick="togglePdfLang('hi',this)">
+        <input type="checkbox" id="pll-hi"> <label for="pll-hi">🇮🇳 हिन्दी</label>
+      </div>
+      <div class="pdf-lang-opt" onclick="togglePdfLang('kn',this)">
+        <input type="checkbox" id="pll-kn"> <label for="pll-kn">🇮🇳 ಕನ್ನಡ</label>
+      </div>
+      <div class="pdf-lang-opt" onclick="togglePdfLang('te',this)">
+        <input type="checkbox" id="pll-te"> <label for="pll-te">🇮🇳 తెలుగు</label>
+      </div>
+      <div class="pdf-lang-opt" onclick="togglePdfLang('ta',this)">
+        <input type="checkbox" id="pll-ta"> <label for="pll-ta">🇮🇳 தமிழ்</label>
+      </div>
+    </div>
+    <div id="pdfGenProgress">
+      <div class="pgbar"><div class="pgfill" id="pgfill" style="width:0%"></div></div>
+      <p id="pgStatus">Preparing...</p>
+    </div>
+    <div class="pdf-modal-btns" id="pdfModalBtns">
+      <button class="pdf-btn-cancel" onclick="closePdfModal()">Cancel</button>
+      <button class="pdf-btn-generate" id="pdfGenBtn" onclick="generateMultiLangPDF()">Generate PDF</button>
+    </div>
+  </div>
+</div>
+  <div class="logo-icon">&#127973;</div>
+  <div><div class="logo-name">AAROGYA AI</div><div class="logo-sub" data-i18n="logo_sub">Advanced Disease Risk Platform</div></div>
+  <div class="lang-switcher" id="langSwitcher">
+    <button class="lang-btn active" onclick="setLang('en')" data-lang="en">🇬🇧 EN</button>
+    <button class="lang-btn" onclick="setLang('hi')" data-lang="hi">🇮🇳 हिं</button>
+    <button class="lang-btn" onclick="setLang('kn')" data-lang="kn">🇮🇳 ಕನ್ನ</button>
+    <button class="lang-btn" onclick="setLang('te')" data-lang="te">🇮🇳 తెలు</button>
+    <button class="lang-btn" onclick="setLang('ta')" data-lang="ta">🇮🇳 தமி</button>
+  </div>
+</header>
+<div class="wrap">
+
+<div class="hero">
+  <div class="hero-eyebrow"><span data-i18n="hero_eyebrow">&#128300; Symptom-Based &middot; Gender-Aware &middot; No Lab Tests Required</span></div>
+  <h1><span data-i18n="hero_h1">Detect Disease Risk</span><br/><span class="hl" data-i18n="hero_h1b">Before It's Too Late</span></h1>
+  <p><span data-i18n="hero_p">Fill in your symptoms. Our AI analyses risk for heart disease, diabetes, cancer, liver, kidney, thyroid &amp; more &mdash; personalised by your biology.</span></p>
+  <div class="hero-chips">
+    <div class="hero-chip">&#10003; Breast Cancer</div>
+    <div class="hero-chip">&#10003; Heart Disease</div>
+    <div class="hero-chip">&#10003; Diabetes</div>
+    <div class="hero-chip">&#10003; PCOS</div>
+    <div class="hero-chip">&#10003; Liver Disease</div>
+    <div class="hero-chip">&#10003; Kidney Disease</div>
+    <div class="hero-chip">&#10003; Prostate Cancer</div>
+    <div class="hero-chip">&#10003; Thyroid Disease</div>
+  </div>
+  <!-- Lung X-Ray CTA -->
+  <a href="{{ url_for('lung_xray') }}" style="display:inline-flex;align-items:center;gap:.65rem;margin-top:1.5rem;
+    padding:.8rem 1.8rem;border-radius:14px;text-decoration:none;font-family:var(--fd);
+    font-weight:800;font-size:.95rem;letter-spacing:.02em;
+    background:linear-gradient(135deg,rgba(0,212,255,.12),rgba(124,58,237,.12));
+    border:1px solid rgba(0,212,255,.35);color:var(--accent);
+    box-shadow:0 4px 22px rgba(0,212,255,.18);transition:all .2s;"
+    onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 10px 36px rgba(0,212,255,.32)'"
+    onmouseout="this.style.transform='';this.style.boxShadow='0 4px 22px rgba(0,212,255,.18)'">
+    <span style="font-size:1.3rem">&#129981;</span>
+    Lung X-Ray Analyser
+  </a>
+</div>
+
+<!-- STEP 1 -->
+<div class="sec-heading">
+  <div class="shn" id="s1">1</div>
+  <div class="sec-heading-text"><h2 data-i18n="s1_title">Personal Identity</h2><p data-i18n="s1_sub">Your name, age and biological sex</p></div>
+</div>
+<div class="card">
+  <div class="fg fg2">
+    <div class="field"><label data-i18n="lbl_name">Full Name</label>
+      <input type="text" id="f_name" placeholder="e.g. Priya Sharma" oninput="chk1()"/></div>
+    <div class="field"><label data-i18n="lbl_age">Age (years)</label>
+      <input type="number" id="f_age" min="18" max="100" value="35"/></div>
+  </div>
+  <div style="margin-top:1.2rem">
+    <div class="field"><label data-i18n="lbl_gender">Biological Sex</label>
+      <div class="gender-grid">
+        <button class="g-card female active" id="btn-f" onclick="setGender('female')">
+          <span class="gc-icon">&#9792;</span><span class="gc-title" data-i18n="gender_f">Female</span>
+          <span class="gc-sub" data-i18n="gender_f_sub">PCOS &middot; Breast &middot; Hormonal</span>
+        </button>
+        <button class="g-card male" id="btn-m" onclick="setGender('male')">
+          <span class="gc-icon">&#9794;</span><span class="gc-title" data-i18n="gender_m">Male</span>
+          <span class="gc-sub" data-i18n="gender_m_sub">Prostate &middot; Heart &middot; Liver</span>
+        </button>
+      </div>
+    </div>
+    <input type="hidden" id="f_gender" value="female"/>
+  </div>
+</div>
+
+<!-- STEP 2 -->
+<div class="sec-heading">
+  <div class="shn">2</div>
+  <div class="sec-heading-text"><h2 data-i18n="s2_title">Body Measurements</h2><p data-i18n="s2_sub">Height, weight and known conditions</p></div>
+</div>
+<div class="card">
+  <div class="sub-label"><span data-i18n="sub_physical">Physical</span><div class="sub-label-line"></div></div>
+  <div class="fg fg3" style="margin-bottom:1rem">
+    <div class="field"><label data-i18n="lbl_height">Height (cm)</label>
+      <input type="number" id="f_height" min="100" max="220" value="165" oninput="calcBMI()"/></div>
+    <div class="field"><label data-i18n="lbl_weight">Weight (kg)</label>
+      <input type="number" id="f_weight" min="30" max="200" value="65" step="0.5" oninput="calcBMI()"/></div>
+    <div class="field"><label data-i18n="lbl_waist">Waist (inches)</label>
+      <input type="number" id="f_waist" min="20" max="70" value="32"/></div>
+  </div>
+  <div id="bmi-display">BMI: &mdash;</div>
+  <div class="sub-label"><span data-i18n="sub_known">Known Conditions</span><div class="sub-label-line"></div></div>
+  <div class="fg fg2">
+    <div class="field"><label data-i18n="lbl_hypert">Diagnosed Hypertension?</label>
+      <select id="f_known_bp" data-i18n-sel="sel_yn_diag">
+        <option value="0">No &mdash; not diagnosed</option>
+        <option value="1">Yes &mdash; diagnosed</option>
+      </select></div>
+    <div class="field"><label data-i18n="lbl_diag_diab">Diagnosed Diabetes?</label>
+      <select id="f_known_diabetes" data-i18n-sel="sel_yn_prediab">
+        <option value="0">No &mdash; not diagnosed</option>
+        <option value="1">Yes / Pre-diabetic</option>
+      </select></div>
+  </div>
+</div>
+
+<!-- STEP 3 -->
+<div class="sec-heading">
+  <div class="shn">3</div>
+  <div class="sec-heading-text"><h2 data-i18n="s3_title">Symptoms &amp; History</h2>
+    <p data-i18n="s3_sub">Select each tab and honestly report your symptoms</p></div>
+</div>
+<div class="card" style="padding-top:1.2rem">
+  <div class="tab-bar">
+    <button class="tb on" onclick="switchTab(this,'tp-ls')" data-i18n="tab_lifestyle"><span class="td"></span>Lifestyle</button>
+    <button class="tb" onclick="switchTab(this,'tp-heart')" data-i18n="tab_heart"><span class="td"></span>Heart</button>
+    <button class="tb" onclick="switchTab(this,'tp-diab')" data-i18n="tab_diabetes"><span class="td"></span>Diabetes</button>
+    <button class="tb" onclick="switchTab(this,'tp-liver')" data-i18n="tab_liver"><span class="td"></span>Liver</button>
+    <button class="tb" onclick="switchTab(this,'tp-kidney')" data-i18n="tab_kidney"><span class="td"></span>Kidney</button>
+    <button class="tb ftab" onclick="switchTab(this,'tp-hormonal')" data-i18n="tab_hormonal"><span class="td"></span>Hormonal</button>
+    <button class="tb ftab" onclick="switchTab(this,'tp-breast')" data-i18n="tab_breast"><span class="td"></span>Breast</button>
+    <button class="tb mtab" onclick="switchTab(this,'tp-prostate')" data-i18n="tab_prostate"><span class="td"></span>Prostate</button>
+    <button class="tb" onclick="switchTab(this,'tp-thyroid')" data-i18n="tab_thyroid"><span class="td"></span>Thyroid</button>
+  </div>
+
+  <!-- LIFESTYLE -->
+  <div class="tp on" id="tp-ls">
+    <div class="sub-label"><span data-i18n="sub_substances">Substances</span><div class="sub-label-line"></div></div>
+    <div class="fg fg2" style="margin-bottom:.8rem">
+      <div class="field"><label data-i18n="lbl_smoking">Smoking</label>
+        <select id="f_smoking" data-i18n-sel="sel_smoking"><option value="0">Never smoked</option><option value="1">Current / ex-smoker</option></select></div>
+      <div class="field"><label data-i18n="lbl_alcohol">Alcohol</label>
+        <select id="f_alcohol" data-i18n-sel="sel_alcohol"><option value="0">None</option><option value="1">Occasional</option><option value="2">Regular weekly</option><option value="3">Daily / heavy</option></select></div>
+    </div>
+    <div class="sub-label"><span data-i18n="sub_activity">Activity &amp; Diet</span><div class="sub-label-line"></div></div>
+    <div class="fg fg2" style="margin-bottom:.8rem">
+      <div class="field"><label data-i18n="lbl_activity">Physical activity</label>
+        <select id="f_activity" data-i18n-sel="sel_activity"><option value="3">Very active</option><option value="2" selected>Active 3-4x/week</option><option value="1">Light 1-2x/week</option><option value="0">Sedentary</option></select></div>
+      <div class="field"><label data-i18n="lbl_diet_quality">Diet quality</label>
+        <select id="f_diet" data-i18n-sel="sel_diet"><option value="0">Balanced &amp; healthy</option><option value="1">Mostly home cooked</option><option value="2">Frequent fast food</option><option value="3">Very unhealthy</option></select></div>
+    </div>
+    <div class="sub-label"><span data-i18n="sub_mental">Mental &amp; Sleep</span><div class="sub-label-line"></div></div>
+    <div class="fg fg2">
+      <div class="field"><label data-i18n="lbl_stress">Stress level</label>
+        <select id="f_stress" data-i18n-sel="sel_stress"><option value="0">Low</option><option value="1">Mild</option><option value="2">Moderate</option><option value="3">High / chronic</option></select></div>
+      <div class="field"><label data-i18n="lbl_sleep">Sleep (hrs/night)</label>
+        <select id="f_sleep" data-i18n-sel="sel_sleep"><option value="8">8+</option><option value="7" selected>7</option><option value="6">6</option><option value="5">5</option><option value="4">4 or less</option></select></div>
+      <div class="field"><label data-i18n="lbl_family_hx">Family history of major disease</label>
+        <select id="f_family_hx" data-i18n-sel="sel_family_hx"><option value="0">None known</option><option value="1">One close relative</option><option value="2">Both parents / multiple</option></select></div>
+    </div>
+  </div>
+
+  <!-- HEART -->
+  <div class="tp" id="tp-heart">
+    <div class="sub-label"><span data-i18n="sub_bp_chol">Blood Pressure &amp; Cholesterol</span><div class="sub-label-line"></div></div>
+    <div class="fg fg2" style="margin-bottom:.8rem">
+      <div class="field"><label data-i18n="lbl_bp_level">Blood pressure level</label>
+        <select id="f_bp_level" data-i18n-sel="sel_bp_level"><option value="0">Normal (below 120/80)</option><option value="1">Elevated (120-129)</option><option value="2">High Stage 1 (130-139)</option><option value="3">High Stage 2 (140+)</option></select></div>
+      <div class="field"><label data-i18n="lbl_cholesterol">Cholesterol (self-assessed)</label>
+        <select id="f_chol" data-i18n-sel="sel_chol"><option value="0">Normal (below 200)</option><option value="1">Borderline (200-239)</option><option value="2">High (240-279)</option><option value="3">Very high (280+)</option></select></div>
+    </div>
+    <div class="sub-label"><span data-i18n="sub_chest">Chest &amp; Heart Symptoms</span><div class="sub-label-line"></div></div>
+    <div class="fg fg2" style="margin-bottom:.8rem">
+      <div class="field"><label data-i18n="lbl_chest_pain">Chest pain / discomfort</label>
+        <select id="f_chest_pain" data-i18n-sel="sel_chest_pain"><option value="0">None</option><option value="1">Mild / atypical</option><option value="2">Typical angina</option><option value="3">Severe / crushing</option></select></div>
+      <div class="field"><label data-i18n="lbl_chest_tight">Chest tightness / pressure</label>
+        <select id="f_chest_tight" data-i18n-sel="sel_freq3"><option value="0">None</option><option value="1">Occasional</option><option value="2">Frequent</option></select></div>
+      <div class="field"><label data-i18n="lbl_palpitations">Heart palpitations</label>
+        <select id="f_palpitations" data-i18n-sel="sel_freq3"><option value="0">None</option><option value="1">Occasional</option><option value="2">Frequent</option></select></div>
+      <div class="field"><label data-i18n="lbl_irreg_hb">Irregular heartbeat</label>
+        <select id="f_irreg_hb" data-i18n-sel="sel_yn"><option value="0">No</option><option value="1">Yes</option></select></div>
+    </div>
+    <div class="sub-label"><span data-i18n="sub_exertion">Exertion Symptoms</span><div class="sub-label-line"></div></div>
+    <div class="fg fg2">
+      <div class="field"><label data-i18n="lbl_breathless">Shortness of breath</label>
+        <select id="f_breathless" data-i18n-sel="sel_breathless"><option value="0">None</option><option value="1">Heavy exertion only</option><option value="2">Moderate exertion</option><option value="3">At rest</option></select></div>
+      <div class="field"><label data-i18n="lbl_exercise_cp">Chest pain during exercise</label>
+        <select id="f_exercise_cp" data-i18n-sel="sel_exercise_cp"><option value="0">No</option><option value="1">Mild</option><option value="2">Frequent</option><option value="3">Always stops me</option></select></div>
+      <div class="field"><label data-i18n="lbl_swelling">Leg / ankle swelling</label>
+        <select id="f_swelling" data-i18n-sel="sel_severity4"><option value="0">None</option><option value="1">Mild</option><option value="2">Moderate</option><option value="3">Severe</option></select></div>
+    </div>
+  </div>
+
+  <!-- DIABETES -->
+  <div class="tp" id="tp-diab">
+    <div class="sub-label"><span data-i18n="sub_blood_sugar">Blood Sugar Symptoms</span><div class="sub-label-line"></div></div>
+    <div class="fg fg2" style="margin-bottom:.8rem">
+      <div class="field"><label data-i18n="lbl_sugar">Blood sugar (self-assessed)</label>
+        <select id="f_sugar" data-i18n-sel="sel_sugar"><option value="0">Normal (below 100 fasting)</option><option value="1">Slightly high (100-125)</option><option value="2">Pre-diabetic range</option><option value="3">Very high (200+)</option></select></div>
+      <div class="field"><label data-i18n="lbl_freq_urine">Frequent / excessive urination</label>
+        <select id="f_freq_urine" data-i18n-sel="sel_freq_urine"><option value="0">Normal</option><option value="1">Somewhat increased</option><option value="2">Significantly increased</option></select></div>
+      <div class="field"><label data-i18n="lbl_thirst">Excessive thirst</label>
+        <select id="f_thirst" data-i18n-sel="sel_thirst"><option value="0">Normal</option><option value="1">Somewhat thirsty</option><option value="2">Constantly thirsty</option></select></div>
+    </div>
+    <div class="sub-label"><span data-i18n="sub_diab_other">Other Diabetes Signs</span><div class="sub-label-line"></div></div>
+    <div class="fg fg2">
+      <div class="field"><label data-i18n="lbl_blur_vis">Blurred vision</label>
+        <select id="f_blur_vis" data-i18n-sel="sel_yn"><option value="0">No</option><option value="1">Yes</option></select></div>
+      <div class="field"><label data-i18n="lbl_slow_heal">Slow healing wounds</label>
+        <select id="f_slow_heal" data-i18n-sel="sel_slow_heal"><option value="0">No &mdash; heals normally</option><option value="1">Yes &mdash; unusually slow</option></select></div>
+      <div class="field"><label data-i18n="lbl_tingling">Tingling / numbness hands or feet</label>
+        <select id="f_tingling" data-i18n-sel="sel_yn"><option value="0">No</option><option value="1">Yes</option></select></div>
+      <div class="field"><label data-i18n="lbl_fatigue">Fatigue / low energy</label>
+        <select id="f_fatigue" data-i18n-sel="sel_severity4"><option value="0">None</option><option value="1">Mild</option><option value="2">Moderate</option><option value="3">Severe</option></select></div>
+    </div>
+  </div>
+
+  <!-- LIVER -->
+  <div class="tp" id="tp-liver">
+    <div class="sub-label"><span data-i18n="sub_liver_sym">Liver Symptoms</span><div class="sub-label-line"></div></div>
+    <div class="fg fg2" style="margin-bottom:.8rem">
+      <div class="field"><label data-i18n="lbl_jaundice">Jaundice (yellow skin / eyes)</label>
+        <select id="f_jaundice" data-i18n-sel="sel_jaundice"><option value="0">None</option><option value="1">Mild yellowing</option><option value="2">Moderate</option><option value="3">Obvious</option></select></div>
+      <div class="field"><label data-i18n="lbl_dark_urine">Dark urine (tea-coloured)</label>
+        <select id="f_dark_urine" data-i18n-sel="sel_yn_normal"><option value="0">No &mdash; normal colour</option><option value="1">Yes</option></select></div>
+      <div class="field"><label data-i18n="lbl_pale_stool">Pale / clay-coloured stool</label>
+        <select id="f_pale_stool" data-i18n-sel="sel_yn_normal"><option value="0">No &mdash; normal</option><option value="1">Yes</option></select></div>
+      <div class="field"><label data-i18n="lbl_itching">Itchy skin (whole body)</label>
+        <select id="f_itching" data-i18n-sel="sel_yn_none"><option value="0">None</option><option value="1">Yes</option></select></div>
+    </div>
+    <div class="sub-label"><span data-i18n="sub_digestive">Digestive</span><div class="sub-label-line"></div></div>
+    <div class="fg fg2">
+      <div class="field"><label data-i18n="lbl_abdominal">Abdominal pain / bloating</label>
+        <select id="f_abdominal" data-i18n-sel="sel_severity4"><option value="0">None</option><option value="1">Mild</option><option value="2">Moderate</option><option value="3">Severe</option></select></div>
+      <div class="field"><label data-i18n="lbl_liver_tender">Right upper abdomen tenderness</label>
+        <select id="f_liver_tender" data-i18n-sel="sel_yn"><option value="0">No</option><option value="1">Yes</option></select></div>
+      <div class="field"><label data-i18n="lbl_nausea">Nausea / vomiting</label>
+        <select id="f_nausea" data-i18n-sel="sel_freq3"><option value="0">None</option><option value="1">Occasional</option><option value="2">Frequent</option></select></div>
+      <div class="field"><label data-i18n="lbl_wtloss">Unexplained weight loss</label>
+        <select id="f_wtloss" data-i18n-sel="sel_yn"><option value="0">No</option><option value="1">Yes</option></select></div>
+    </div>
+  </div>
+
+  <!-- KIDNEY -->
+  <div class="tp" id="tp-kidney">
+    <div class="sub-label"><span data-i18n="sub_urinary">Urinary Symptoms</span><div class="sub-label-line"></div></div>
+    <div class="fg fg2" style="margin-bottom:.8rem">
+      <div class="field"><label data-i18n="lbl_urine_less">Reduced urine output</label>
+        <select id="f_urine_less" data-i18n-sel="sel_urine_less"><option value="0">Normal</option><option value="1">Slightly reduced</option><option value="2">Noticeably less</option><option value="3">Very little</option></select></div>
+      <div class="field"><label data-i18n="lbl_urine_blood">Blood in urine</label>
+        <select id="f_urine_blood" data-i18n-sel="sel_urine_blood"><option value="0">No</option><option value="1">Trace</option><option value="2">Often / visible</option></select></div>
+      <div class="field"><label data-i18n="lbl_urine_foam">Foamy / frothy urine</label>
+        <select id="f_urine_foam" data-i18n-sel="sel_urine_foam"><option value="0">No</option><option value="1">Sometimes</option><option value="2">Frequently</option></select></div>
+    </div>
+    <div class="sub-label"><span data-i18n="sub_back_swell">Back &amp; Swelling</span><div class="sub-label-line"></div></div>
+    <div class="fg fg2">
+      <div class="field"><label data-i18n="lbl_back_pain">Lower back / flank pain</label>
+        <select id="f_back_pain" data-i18n-sel="sel_back_pain"><option value="0">None</option><option value="1">Mild</option><option value="2">Persistent / severe</option></select></div>
+      <div class="field"><label data-i18n="lbl_puffiness">Puffiness around eyes / face</label>
+        <select id="f_puffiness" data-i18n-sel="sel_yn_morning"><option value="0">No</option><option value="1">Yes &mdash; morning puffiness</option></select></div>
+      <div class="field"><label data-i18n="lbl_leg_cramps">Leg cramps</label>
+        <select id="f_leg_cramps" data-i18n-sel="sel_yn_frequent"><option value="0">No</option><option value="1">Yes &mdash; frequent</option></select></div>
+    </div>
+  </div>
+
+  <!-- HORMONAL FEMALE -->
+  <div class="tp ftab" id="tp-hormonal">
+    <div class="sub-label"><span data-i18n="sub_menstrual">Menstrual Health</span><div class="sub-label-line"></div></div>
+    <div class="fg fg2" style="margin-bottom:.8rem">
+      <div class="field"><label data-i18n="lbl_cycle">Menstrual cycle regularity</label>
+        <select id="f_irreg_cycle" data-i18n-sel="sel_cycle"><option value="0">Regular (28-35 days)</option><option value="1">Slightly irregular</option><option value="2">Very irregular</option><option value="3">Absent</option></select></div>
+      <div class="field"><label data-i18n="lbl_heavy_period">Heavy or prolonged periods</label>
+        <select id="f_heavy_period" data-i18n-sel="sel_heavy_period"><option value="0">Normal flow</option><option value="1">Heavy</option><option value="2">Very heavy / prolonged</option></select></div>
+    </div>
+    <div class="sub-label"><span data-i18n="sub_pcos_signs">PCOS Signs</span><div class="sub-label-line"></div></div>
+    <div class="fg fg2">
+      <div class="field"><label data-i18n="lbl_facial_hair">Excess facial / body hair</label>
+        <select id="f_facial_hair" data-i18n-sel="sel_severity3"><option value="0">No</option><option value="1">Mild</option><option value="2">Significant</option></select></div>
+      <div class="field"><label data-i18n="lbl_dark_skin">Skin darkening (neck / armpits)</label>
+        <select id="f_dark_skin" data-i18n-sel="sel_yn"><option value="0">No</option><option value="1">Yes</option></select></div>
+      <div class="field"><label data-i18n="lbl_acne">Acne / cystic breakouts</label>
+        <select id="f_pcos_acne" data-i18n-sel="sel_acne"><option value="0">None</option><option value="1">Mild</option><option value="2">Moderate / cystic</option><option value="3">Severe</option></select></div>
+      <div class="field"><label data-i18n="lbl_wtgain">Unexplained weight gain</label>
+        <select id="f_wtgain" data-i18n-sel="sel_yn"><option value="0">No</option><option value="1">Yes</option></select></div>
+    </div>
+  </div>
+
+  <!-- BREAST FEMALE -->
+  <div class="tp ftab" id="tp-breast">
+    <div class="sub-label"><span data-i18n="sub_breast_sym">Breast Symptoms</span><div class="sub-label-line"></div></div>
+    <div class="fg fg2" style="margin-bottom:.8rem">
+      <div class="field"><label data-i18n="lbl_breast_lump">Breast lump or thickening</label>
+        <select id="f_breast_lump" data-i18n-sel="sel_yn_felt"><option value="0">No</option><option value="1">Yes &mdash; felt or detected</option></select></div>
+      <div class="field"><label data-i18n="lbl_breast_pain">Breast pain / tenderness</label>
+        <select id="f_breast_pain" data-i18n-sel="sel_breast_pain"><option value="0">None</option><option value="1">Mild / cyclical</option><option value="2">Persistent / severe</option></select></div>
+      <div class="field"><label data-i18n="lbl_nipple_disc">Nipple discharge (non-milk)</label>
+        <select id="f_nipple_disc" data-i18n-sel="sel_yn"><option value="0">No</option><option value="1">Yes</option></select></div>
+    </div>
+    <div class="sub-label"><span data-i18n="sub_breast_risk">Breast Risk Factors</span><div class="sub-label-line"></div></div>
+    <div class="fg fg2">
+      <div class="field"><label data-i18n="lbl_breast_skin">Skin changes on breast (dimpling)</label>
+        <select id="f_breast_skin" data-i18n-sel="sel_yn_nochanges"><option value="0">No changes</option><option value="1">Yes</option></select></div>
+      <div class="field"><label data-i18n="lbl_breast_fam">Family history of breast cancer</label>
+        <select id="f_breast_fam" data-i18n-sel="sel_yn_relative"><option value="0">No</option><option value="1">Yes &mdash; close relative</option></select></div>
+    </div>
+  </div>
+
+  <!-- PROSTATE MALE -->
+  <div class="tp mtab" id="tp-prostate">
+    <div class="sub-label"><span data-i18n="sub_prostate">Urinary / Prostate Symptoms</span><div class="sub-label-line"></div></div>
+    <div class="fg fg2" style="margin-bottom:.8rem">
+      <div class="field"><label data-i18n="lbl_urin_diff">Difficulty urinating / weak stream</label>
+        <select id="f_urin_diff" data-i18n-sel="sel_urin_diff"><option value="0">None &mdash; normal</option><option value="1">Mild hesitancy</option><option value="2">Moderate difficulty</option><option value="3">Severe</option></select></div>
+      <div class="field"><label data-i18n="lbl_nocturia">Waking at night to urinate</label>
+        <select id="f_nocturia" data-i18n-sel="sel_nocturia"><option value="0">Rarely</option><option value="1">1-2x per night</option><option value="2">3+ times per night</option></select></div>
+      <div class="field"><label data-i18n="lbl_blood_semen">Blood in semen</label>
+        <select id="f_blood_semen" data-i18n-sel="sel_yn"><option value="0">No</option><option value="1">Yes</option></select></div>
+    </div>
+    <div class="sub-label"><span data-i18n="sub_pain">Pain</span><div class="sub-label-line"></div></div>
+    <div class="fg fg2">
+      <div class="field"><label data-i18n="lbl_pelvic_pain">Pelvic / lower back pain</label>
+        <select id="f_pelvic_pain" data-i18n-sel="sel_back_pain"><option value="0">None</option><option value="1">Mild</option><option value="2">Persistent / severe</option></select></div>
+      <div class="field"><label data-i18n="lbl_erectile">Erectile dysfunction</label>
+        <select id="f_erectile" data-i18n-sel="sel_erectile"><option value="0">No issues</option><option value="1">Yes &mdash; new onset</option></select></div>
+    </div>
+  </div>
+
+  <!-- THYROID -->
+  <div class="tp" id="tp-thyroid">
+    <div class="sub-label"><span data-i18n="sub_thyroid_sym">Thyroid Symptoms</span><div class="sub-label-line"></div></div>
+    <div class="fg fg2" style="margin-bottom:.8rem">
+      <div class="field"><label data-i18n="lbl_thyroid_swell">Neck / thyroid swelling or lump</label>
+        <select id="f_thyroid_swell" data-i18n-sel="sel_yn_visible"><option value="0">No</option><option value="1">Yes &mdash; visible / palpable</option></select></div>
+      <div class="field"><label data-i18n="lbl_cold_intol">Always feeling cold</label>
+        <select id="f_cold_intol" data-i18n-sel="sel_yn"><option value="0">No</option><option value="1">Yes</option></select></div>
+      <div class="field"><label data-i18n="lbl_heat_intol">Excessive sweating / heat intolerance</label>
+        <select id="f_heat_intol" data-i18n-sel="sel_yn"><option value="0">No</option><option value="1">Yes</option></select></div>
+      <div class="field"><label data-i18n="lbl_voice_chg">Voice hoarseness</label>
+        <select id="f_voice_chg" data-i18n-sel="sel_yn"><option value="0">No</option><option value="1">Yes</option></select></div>
+    </div>
+    <div class="sub-label"><span data-i18n="sub_risk_factors">Risk Factors</span><div class="sub-label-line"></div></div>
+    <div class="fg fg2">
+      <div class="field"><label data-i18n="lbl_radiation">Previous radiation to neck</label>
+        <select id="f_radiation" data-i18n-sel="sel_yn"><option value="0">No</option><option value="1">Yes</option></select></div>
+      <div class="field"><label data-i18n="lbl_hairloss">Hair thinning / loss</label>
+        <select id="f_hairloss" data-i18n-sel="sel_hairloss"><option value="0">None</option><option value="1">Noticeable</option></select></div>
+    </div>
+  </div>
+
+</div><!-- /card -->
+
+<button class="predict-btn" onclick="runPrediction()">
+  <span data-i18n="btn_predict">&#128300; &nbsp;&nbsp; Predict My Disease Risk</span>
+</button>
+
+<div id="loading">
+  <div class="tri-loader">
+    <div class="tri-ring"></div><div class="tri-ring"></div><div class="tri-ring"></div>
+  </div>
+  <div class="load-txt"><span data-i18n="loading_txt">Analysing <em>all symptom inputs</em>&#8230;</span></div>
+  <div style="font-size:.75rem;color:var(--muted);margin-top:.4rem"><span data-i18n="loading_sub">Running disease-specific scoring models</span></div>
+</div>
+
+<div id="results">
+  <div class="sec-heading" style="margin-top:2.5rem">
+    <div class="shn shn-done">&#10003;</div>
+    <div class="sec-heading-text"><h2 data-i18n="results_title">Your Health Risk Report</h2><p data-i18n="results_sub">Each disease scored independently based only on its own symptoms</p></div>
+  </div>
+
+  <!-- PDF PRINT BUTTON -->
+  <div class="report-btn-wrap">
+    <button class="report-btn" onclick="downloadPDF()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <line x1="12" y1="18" x2="12" y2="12"/>
+        <polyline points="9 15 12 18 15 15"/>
+      </svg>
+      <span data-i18n="btn_pdf">Download PDF Report</span>
+    </button>
+  </div>
+
+  <div class="overall-card">
+    <div class="score-ring-area">
+      <svg width="138" height="138" viewBox="0 0 138 138">
+        <circle cx="69" cy="69" r="58" fill="none" stroke="rgba(255,255,255,.05)" stroke-width="9"/>
+        <circle id="ring-fill" cx="69" cy="69" r="58" fill="none"
+                stroke="var(--accent)" stroke-width="9" stroke-linecap="round"
+                stroke-dasharray="364.4" stroke-dashoffset="364.4"
+                transform="rotate(-90 69 69)"
+                style="transition:stroke-dashoffset 1.5s cubic-bezier(.4,0,.2,1)"/>
+      </svg>
+      <div class="score-center">
+        <span class="score-num" id="sc-num">&mdash;</span>
+        <span class="score-unit">% risk</span>
+      </div>
+    </div>
+    <div>
+      <div class="ov-tag">Overall Risk Score</div>
+      <div class="ov-level" id="ov-level">&mdash;</div>
+      <div class="ov-patient" id="ov-patient">&mdash;</div>
+    </div>
+  </div>
+  <div style="font-size:.65rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-bottom:1rem">
+    Per-Disease Risk Breakdown
+  </div>
+  <div class="d-grid" id="d-grid"></div>
+  <div class="disclaimer">
+    <div style="font-size:1rem;flex-shrink:0">&#9888;&#65039;</div>
+    <div><strong>Medical Disclaimer:</strong> This tool is for informational / educational purposes only. It does not constitute medical advice, diagnosis or treatment. Always consult a qualified healthcare professional.</div>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+
+<!-- jsPDF CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+function gv(id){var e=document.getElementById(id);return e?parseFloat(e.value)||0:0;}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+function lvl(s){return s<20?'LOW':s<45?'MODERATE':s<70?'HIGH':'CRITICAL';}
+function lc(l){return l==='LOW'?'#10b981':l==='MODERATE'?'#f59e0b':l==='HIGH'?'#ef4444':'#dc2626';}
+function lb(l){return l==='LOW'?'rgba(16,185,129,.15)':l==='MODERATE'?'rgba(245,158,11,.15)':l==='HIGH'?'rgba(239,68,68,.15)':'rgba(220,38,38,.2)';}
+
+var lastData=null;
+
+function setGender(g){
+  document.getElementById('f_gender').value=g;
+  document.body.className=g==='female'?'gf':'gm';
+  document.getElementById('btn-f').className='g-card female'+(g==='female'?' active':'');
+  document.getElementById('btn-m').className='g-card male'+(g==='male'?' active':'');
+  var at=document.querySelector('.tp.on');
+  if(at&&(at.id==='tp-hormonal'||at.id==='tp-breast'||at.id==='tp-prostate')){
+    document.querySelector('.tb:not(.ftab):not(.mtab)').click();
+  }
+}
+setGender('female');
+
+function switchTab(btn,id){
+  document.querySelectorAll('.tb').forEach(function(b){b.classList.remove('on');});
+  document.querySelectorAll('.tp').forEach(function(p){p.classList.remove('on');});
+  btn.classList.add('on');
+  document.getElementById(id).classList.add('on');
+}
+
+function calcBMI(){
+  var h=parseFloat(document.getElementById('f_height').value)/100;
+  var w=parseFloat(document.getElementById('f_weight').value);
+  if(!h||!w)return;
+  var bmi=(w/(h*h)).toFixed(1);
+  var cat=bmi<18.5?'Underweight':bmi<25?'Normal weight':bmi<30?'Overweight':bmi<35?'Obese I':'Obese II+';
+  var bg,col,bd;
+  if(bmi<25){bg='rgba(16,185,129,.12)';col='#10b981';bd='rgba(16,185,129,.3)';}
+  else if(bmi<30){bg='rgba(245,158,11,.12)';col='#f59e0b';bd='rgba(245,158,11,.3)';}
+  else{bg='rgba(239,68,68,.12)';col='#ef4444';bd='rgba(239,68,68,.3)';}
+  var el=document.getElementById('bmi-display');
+  el.textContent='BMI: '+bmi+' - '+cat;
+  el.style.cssText='display:inline-block;padding:.4rem 1rem;border-radius:10px;font-size:.8rem;font-weight:700;margin-top:.5rem;background:'+bg+';color:'+col+';border:1px solid '+bd;
+}
+calcBMI();
+
+function chk1(){
+  var n=document.getElementById('f_name').value.trim();
+  var s=document.getElementById('s1');
+  s.className='shn'+(n?' shn-done':'');
+  s.textContent=n?'v':'1';
+}
+
+function scoreHeart(f){
+  var p=0;
+  p+=f.known_bp*15;p+=f.bp_level*8;p+=f.chol*7;p+=f.chest_pain*12;p+=f.chest_tight*8;
+  p+=f.palpitations*5;p+=f.irreg_hb*10;p+=f.breathless*6;p+=f.exercise_cp*10;p+=f.swelling*5;
+  if(p===0)return 0;
+  var s=0;
+  if(f.age>=60)s+=4;else if(f.age>=50)s+=2;
+  if(f.smoking)s+=4;if(f.activity===0)s+=3;else if(f.activity===1)s+=1;
+  if(f.stress>=2)s+=2;if(f.family_hx>=1)s+=3;
+  if(f.bmi>=30)s+=4;else if(f.bmi>=25)s+=2;
+  return clamp(Math.round(p+s),0,100);
+}
+function scoreDiabetes(f){
+  var p=0;
+  p+=f.known_diabetes*25;p+=f.sugar*12;p+=f.freq_urine*6;p+=f.thirst*6;
+  p+=f.blur_vis*5;p+=f.slow_heal*8;p+=f.tingling*6;
+  if(p===0)return 0;
+  var s=0;
+  if(f.age>=50)s+=4;else if(f.age>=40)s+=2;
+  if(f.bmi>=30)s+=6;else if(f.bmi>=25)s+=3;
+  if(f.family_hx>=1)s+=3;if(f.activity===0)s+=4;else if(f.activity===1)s+=2;
+  if(f.diet>=2)s+=3;if(f.fatigue>=2)s+=2;
+  return clamp(Math.round(p+s),0,100);
+}
+function scoreLiver(f){
+  var p=0;
+  p+=f.jaundice*18;p+=f.dark_urine*10;p+=f.pale_stool*9;p+=f.liver_tender*12;p+=f.itching*7;
+  if(p===0){if(f.alcohol>=3)return clamp(Math.round(f.alcohol*5+(f.abdominal*2)),0,25);return 0;}
+  var s=0;
+  if(f.alcohol>=2)s+=10;else if(f.alcohol===1)s+=4;
+  if(f.abdominal>=2)s+=5;else if(f.abdominal===1)s+=2;
+  if(f.nausea>=1)s+=3;if(f.wtloss)s+=3;if(f.fatigue>=2)s+=2;if(f.smoking)s+=2;if(f.age>=50)s+=3;
+  return clamp(Math.round(p+s),0,100);
+}
+function scoreKidney(f){
+  var p=0;
+  p+=f.urine_blood*14;p+=f.urine_foam*10;p+=f.urine_less*10;p+=f.back_pain*7;p+=f.puffiness*8;
+  if(p===0)return 0;
+  var s=0;
+  if(f.known_bp)s+=6;if(f.known_diabetes)s+=6;
+  if(f.age>=60)s+=4;else if(f.age>=50)s+=2;
+  if(f.leg_cramps)s+=3;if(f.fatigue>=2)s+=2;
+  return clamp(Math.round(p+s),0,100);
+}
+function scoreBreastCancer(f){
+  if(f.gender!=='female')return null;
+  var p=0;
+  p+=f.breast_lump*28;p+=f.nipple_disc*14;p+=f.breast_skin*12;p+=f.breast_fam*10;
+  if(p===0){if(f.breast_pain>=2)return clamp(f.breast_pain*3,0,12);return 0;}
+  var s=0;
+  if(f.age>=60)s+=6;else if(f.age>=45)s+=4;else if(f.age>=35)s+=2;
+  if(f.breast_pain>=1)s+=4;if(f.smoking)s+=3;if(f.alcohol>=2)s+=3;if(f.bmi>=30)s+=3;
+  return clamp(Math.round(p+s),0,100);
+}
+function scorePCOS(f){
+  if(f.gender!=='female')return null;
+  var p=0;
+  p+=f.irreg_cycle*10;p+=f.facial_hair*12;p+=f.dark_skin*10;p+=f.pcos_acne*6;p+=f.heavy_period*6;
+  if(p===0)return 0;
+  var s=0;
+  if(f.age>=18&&f.age<=40)s+=2;if(f.wtgain)s+=4;
+  if(f.bmi>=28)s+=5;else if(f.bmi>=25)s+=2;
+  if(f.known_diabetes)s+=5;if(f.fatigue>=1)s+=2;
+  return clamp(Math.round(p+s),0,100);
+}
+function scoreProstate(f){
+  if(f.gender!=='male')return null;
+  var p=0;
+  p+=f.urin_diff*12;p+=f.blood_semen*20;p+=f.nocturia*8;p+=f.pelvic_pain*10;p+=f.urine_blood*8;p+=f.erectile*5;
+  if(p===0){if(f.age>=70)return 10;if(f.age>=60)return 6;return 0;}
+  var s=0;
+  if(f.age>=70)s+=10;else if(f.age>=60)s+=6;else if(f.age>=50)s+=3;
+  if(f.family_hx>=1)s+=5;
+  return clamp(Math.round(p+s),0,100);
+}
+function scoreThyroid(f){
+  var p=0;
+  p+=f.thyroid_swell*22;p+=f.voice_chg*12;p+=f.radiation*18;p+=f.cold_intol*9;p+=f.heat_intol*9;
+  if(p===0)return 0;
+  var s=0;
+  if(f.hairloss)s+=5;if(f.fatigue>=2)s+=2;if(f.wtgain||f.wtloss)s+=3;
+  if(f.family_hx>=1)s+=4;if(f.gender==='female')s+=3;
+  return clamp(Math.round(p+s),0,100);
+}
+
+function runPrediction(){
+  var name=document.getElementById('f_name').value.trim();
+  if(!name){alert('Please enter your name first.');return;}
+  document.getElementById('loading').style.display='block';
+  document.getElementById('results').style.display='none';
+
+  setTimeout(function(){
+    try{
+      var gender=document.getElementById('f_gender').value;
+      var age=gv('f_age');
+      var h=gv('f_height')/100;
+      var w=gv('f_weight');
+      var bmi=h>0?w/(h*h):22;
+
+      var f={
+        gender:gender,age:age,bmi:bmi,
+        known_bp:gv('f_known_bp'),known_diabetes:gv('f_known_diabetes'),
+        smoking:gv('f_smoking'),alcohol:gv('f_alcohol'),
+        activity:gv('f_activity'),diet:gv('f_diet'),
+        stress:gv('f_stress'),family_hx:gv('f_family_hx'),
+        fatigue:gv('f_fatigue'),wtgain:gv('f_wtgain'),wtloss:gv('f_wtloss'),
+        bp_level:gv('f_bp_level'),chol:gv('f_chol'),
+        chest_pain:gv('f_chest_pain'),chest_tight:gv('f_chest_tight'),
+        palpitations:gv('f_palpitations'),irreg_hb:gv('f_irreg_hb'),
+        breathless:gv('f_breathless'),exercise_cp:gv('f_exercise_cp'),swelling:gv('f_swelling'),
+        sugar:gv('f_sugar'),freq_urine:gv('f_freq_urine'),thirst:gv('f_thirst'),
+        blur_vis:gv('f_blur_vis'),slow_heal:gv('f_slow_heal'),tingling:gv('f_tingling'),
+        jaundice:gv('f_jaundice'),dark_urine:gv('f_dark_urine'),pale_stool:gv('f_pale_stool'),
+        itching:gv('f_itching'),abdominal:gv('f_abdominal'),liver_tender:gv('f_liver_tender'),
+        nausea:gv('f_nausea'),
+        urine_less:gv('f_urine_less'),urine_blood:gv('f_urine_blood'),urine_foam:gv('f_urine_foam'),
+        back_pain:gv('f_back_pain'),puffiness:gv('f_puffiness'),leg_cramps:gv('f_leg_cramps'),
+        irreg_cycle:gv('f_irreg_cycle'),heavy_period:gv('f_heavy_period'),
+        facial_hair:gv('f_facial_hair'),dark_skin:gv('f_dark_skin'),pcos_acne:gv('f_pcos_acne'),
+        breast_lump:gv('f_breast_lump'),breast_pain:gv('f_breast_pain'),
+        nipple_disc:gv('f_nipple_disc'),breast_skin:gv('f_breast_skin'),breast_fam:gv('f_breast_fam'),
+        urin_diff:gv('f_urin_diff'),nocturia:gv('f_nocturia'),blood_semen:gv('f_blood_semen'),
+        pelvic_pain:gv('f_pelvic_pain'),erectile:gv('f_erectile'),
+        thyroid_swell:gv('f_thyroid_swell'),cold_intol:gv('f_cold_intol'),
+        heat_intol:gv('f_heat_intol'),voice_chg:gv('f_voice_chg'),
+        radiation:gv('f_radiation'),hairloss:gv('f_hairloss')
+      };
+
+      var results=[];
+      function add(name,icon,score){if(score===null)return;results.push({name:name,icon:icon,risk:score,level:lvl(score)});}
+      add('Heart Disease','H',scoreHeart(f));
+      add('Diabetes','D',scoreDiabetes(f));
+      add('Liver Disease','L',scoreLiver(f));
+      add('Kidney Disease','K',scoreKidney(f));
+      add('Thyroid Disease','T',scoreThyroid(f));
+      add('Breast Cancer','B',scoreBreastCancer(f));
+      add('PCOS','P',scorePCOS(f));
+      add('Prostate Cancer','R',scoreProstate(f));
+
+      var total=0;
+      results.forEach(function(r){total+=r.risk;});
+      var overall=Math.round(total/results.length);
+      var o_level=lvl(overall);
+
+      lastData={
+        patient:name,gender:gender,age:age,
+        height:gv('f_height'),weight:gv('f_weight'),bmi:bmi.toFixed(1),
+        overall:overall,o_level:o_level,
+        results:results,
+        timestamp:new Date()
+      };
+      renderResults(lastData);
+    }catch(e){alert('Error: '+e.message);}
+    document.getElementById('loading').style.display='none';
+  },1600);
+}
+
+function renderResults(data){
+  var el=document.getElementById('results');
+  el.style.display='block';
+  setTimeout(function(){el.scrollIntoView({behavior:'smooth',block:'start'});},100);
+
+  var circ=2*Math.PI*58;
+  var ring=document.getElementById('ring-fill');
+  ring.style.stroke=lc(data.o_level);
+  setTimeout(function(){ring.style.strokeDashoffset=circ*(1-data.overall/100);},150);
+
+  document.getElementById('sc-num').textContent=data.overall;
+  document.getElementById('sc-num').style.color=lc(data.o_level);
+
+  var lvlEmoji=data.o_level==='LOW'?'OK':data.o_level==='MODERATE'?'Warning':data.o_level==='HIGH'?'High':'Critical';
+  document.getElementById('ov-level').textContent=lvlEmoji+' '+t('lbl_'+data.o_level.toLowerCase())+' '+t('lbl_overall_risk');
+  document.getElementById('ov-level').style.color=lc(data.o_level);
+
+  var gc=data.gender==='female'?'#f43f8e':'#3b82f6';
+  var gBg=data.gender==='female'?'rgba(244,63,142,.1)':'rgba(59,130,246,.1)';
+  var gBd=data.gender==='female'?'rgba(244,63,142,.3)':'rgba(59,130,246,.3)';
+  document.getElementById('ov-patient').innerHTML=
+    data.patient+' <span class="ptag" style="background:'+gBg+';color:'+gc+';border:1px solid '+gBd+'">'+(data.gender==='female'?t('lbl_female'):t('lbl_male'))+'</span>';
+
+  var icons={'Heart Disease':'H','Diabetes':'D','Liver Disease':'L','Kidney Disease':'K',
+    'Thyroid Disease':'T','Breast Cancer':'B','PCOS':'P','Prostate Cancer':'R'};
+  var emojiIcons={'Heart Disease':'\u2764','Diabetes':'\uD83D\uDC89','Liver Disease':'\uD83E\uDDA0',
+    'Kidney Disease':'\uD83D\uDCA7','Thyroid Disease':'\uD83E\uDD8B','Breast Cancer':'\uD83C\uDF7B',
+    'PCOS':'\uD83C\uDF38','Prostate Cancer':'\uD83D\uDD35'};
+
+  var grid=document.getElementById('d-grid');
+  grid.innerHTML='';
+  data.results.forEach(function(r,i){
+    var col=lc(r.level);var bg=lb(r.level);
+    var dc=document.createElement('div');
+    dc.className='dc';
+    dc.style.animationDelay=(i*0.07)+'s';
+    dc.style.borderColor=r.risk>45?col.replace(')',', 0.3)').replace('rgb','rgba'):'var(--border)';
+    dc.innerHTML='<div class="dc-top">'+
+      '<div class="dc-icon" style="background:'+bg+'">'+(emojiIcons[r.name]||r.icon)+'</div>'+
+      '<div class="dc-name">'+getLocalDiseaseName(r.name)+'</div>'+
+      '<div class="dc-badge" style="background:'+bg+';color:'+col+'">'+t('lbl_'+r.level.toLowerCase())+'</div>'+
+      '</div>'+
+      '<div class="dc-bar"><div class="dc-fill" id="dcf'+i+'" style="background:linear-gradient(90deg,'+col+','+col+'66)"></div></div>'+
+      '<div class="dc-bottom">'+
+      '<div class="dc-pct" style="color:'+col+'">'+r.risk+'%</div>'+
+      '<div class="dc-meta">'+(r.risk===0?t('no_symptoms'):t('based_on'))+'</div>'+
+      '</div>';
+    grid.appendChild(dc);
+    (function(idx,risk){
+      setTimeout(function(){var f=document.getElementById('dcf'+idx);if(f)f.style.width=risk+'%';},200+idx*70);
+    })(i,r.risk);
+  });
+}
+
+/* ============================================================
+   PDF REPORT GENERATOR
+   ============================================================ */
+function downloadPDF(){
+  if(!lastData){alert('Please run the prediction first.');return;}
+  // Pre-check the current language checkbox
+  var allLangs=['en','hi','kn','te','ta'];
+  allLangs.forEach(function(l){
+    var el=document.getElementById('pll-'+l);
+    var opt=el?el.closest('.pdf-lang-opt'):null;
+    if(l===CURRENT_LANG){
+      if(el) el.checked=true;
+      if(opt) opt.classList.add('selected');
+    }
+  });
+  document.getElementById('pdfGenProgress').style.display='none';
+  document.getElementById('pdfModalBtns').style.display='flex';
+  document.getElementById('pdfLangModal').classList.add('open');
+}
+
+function togglePdfLang(lang,el){
+  var cb=document.getElementById('pll-'+lang);
+  if(cb){ cb.checked=!cb.checked; }
+  el.classList.toggle('selected', cb&&cb.checked);
+}
+
+function closePdfModal(){
+  document.getElementById('pdfLangModal').classList.remove('open');
+}
+
+function tLang(lang,key){
+  return (TRANSLATIONS[lang]&&TRANSLATIONS[lang][key])||TRANSLATIONS.en[key]||key;
+}
+function getDiseaseName(lang,englishName){
+  var rems=REMEDY_TRANSLATIONS[lang]||REMEDY_TRANSLATIONS.en;
+  for(var k in rems){
+    if(rems[k]&&REMEDY_TRANSLATIONS.en[k]&&REMEDY_TRANSLATIONS.en[k].name.toLowerCase()===englishName.toLowerCase()){
+      return rems[k].name;
+    }
+  }
+  return englishName;
+}
+
+function buildReportHTML(lang){
+  var T=function(k){return tLang(lang,k);};
+  var D=function(n){return getDiseaseName(lang,n);};
+  var LC={LOW:'#10b981',MODERATE:'#d97706',HIGH:'#ef4444',CRITICAL:'#b91c1c'};
+  var LBG={LOW:'#d1fae5',MODERATE:'#fef3c7',HIGH:'#fee2e2',CRITICAL:'#fecaca'};
+  var LTX={LOW:'#065f46',MODERATE:'#78350f',HIGH:'#7f1d1d',CRITICAL:'#450a0a'};
+  var ts=lastData.timestamp;
+  var tsStr=ts.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})+'  '+ts.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+  var ocol=LC[lastData.o_level]||'#10b981';
+  var obg=LBG[lastData.o_level]||'#d1fae5';
+  var otx=LTX[lastData.o_level]||'#065f46';
+
+  var cardsHTML='';
+  lastData.results.forEach(function(r){
+    var rcol=LC[r.level]||'#10b981';
+    var rbg=LBG[r.level]||'#d1fae5';
+    var rtx=LTX[r.level]||'#065f46';
+    var barW=Math.round(r.risk)+'%';
+    var noteTxt=r.risk===0?T('no_symptoms'):T('lbl_pdf_inputs');
+    cardsHTML+='<div style="background:#0c1830;border:1px solid #1e3a5c;border-radius:10px;padding:12px 14px;border-left:3px solid '+rcol+';">'+
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">'+
+      '<div style="display:flex;align-items:center;gap:10px;">'+
+      '<div style="width:30px;height:30px;border-radius:50%;background:'+rcol+';display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:13px;">'+r.name.charAt(0)+'</div>'+
+      '<span style="color:#e2eeff;font-weight:800;font-size:14px;">'+D(r.name)+'</span></div>'+
+      '<span style="background:'+rbg+';color:'+rtx+';border-radius:20px;padding:2px 10px;font-size:11px;font-weight:800;">'+T('lbl_'+r.level.toLowerCase())+'</span>'+
+      '</div>'+
+      '<div style="height:6px;background:#1e3a5c;border-radius:3px;margin-bottom:8px;"><div style="height:100%;width:'+barW+';background:'+rcol+';border-radius:3px;"></div></div>'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;">'+
+      '<span style="color:'+rcol+';font-weight:900;font-size:20px;">'+r.risk+'%</span>'+
+      '<span style="color:#4a6080;font-size:11px;">'+noteTxt+'</span>'+
+      '</div></div>';
+  });
+
+  var langNames={en:'English',hi:'हिन्दी',kn:'ಕನ್ನಡ',te:'తెలుగు',ta:'தமிழ்'};
+
+  return '<div style="background:#030810;color:#e2eeff;font-family:Arial,sans-serif;width:794px;padding:0;margin:0;">'+
+    // Header
+    '<div style="background:#030810;padding:20px 30px 15px;border-bottom:2px solid #00d4ff;">'+
+    '<div style="display:flex;align-items:center;justify-content:space-between;">'+
+    '<div style="display:flex;align-items:center;gap:12px;">'+
+    '<div style="width:40px;height:40px;background:#0ea5e9;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:18px;">M</div>'+
+    '<div><div style="color:#00d4ff;font-weight:900;font-size:20px;letter-spacing:1px;">AAROGYA AI</div>'+
+    '<div style="color:#7a9bbf;font-size:11px;">'+T('lbl_report_sub')+'</div></div></div>'+
+    '<div style="text-align:right;">'+
+    '<div style="color:#3d5a7a;font-size:10px;">'+T('lbl_generated')+': '+tsStr+'</div>'+
+    '<div style="color:#3d5a7a;font-size:10px;">Lang: '+langNames[lang]+'</div>'+
+    '</div></div></div>'+
+    // Patient card
+    '<div style="margin:16px 30px;background:#0c1830;border-radius:10px;padding:14px 18px;border-left:4px solid #00d4ff;">'+
+    '<div style="font-weight:900;font-size:18px;color:#e2eeff;margin-bottom:6px;">'+lastData.patient+
+    ' <span style="background:'+(lastData.gender==='female'?'#fce7f3':'#dbeafe')+';color:'+(lastData.gender==='female'?'#831843':'#1e3a8a')+';padding:2px 10px;border-radius:20px;font-size:11px;font-weight:800;">'+(lastData.gender==='female'?T('lbl_female'):T('lbl_male'))+'</span></div>'+
+    '<div style="display:flex;gap:28px;flex-wrap:wrap;">'+
+    '<div><div style="color:#3d5a7a;font-size:10px;text-transform:uppercase;">Age</div><div style="color:#e2eeff;font-weight:700;">'+lastData.age+' yrs</div></div>'+
+    '<div><div style="color:#3d5a7a;font-size:10px;text-transform:uppercase;">Height</div><div style="color:#e2eeff;font-weight:700;">'+lastData.height+' cm</div></div>'+
+    '<div><div style="color:#3d5a7a;font-size:10px;text-transform:uppercase;">Weight</div><div style="color:#e2eeff;font-weight:700;">'+lastData.weight+' kg</div></div>'+
+    '<div><div style="color:#3d5a7a;font-size:10px;text-transform:uppercase;">BMI</div><div style="color:#e2eeff;font-weight:700;">'+lastData.bmi+'</div></div>'+
+    '</div></div>'+
+    // Overall risk
+    '<div style="margin:0 30px 16px;background:'+obg+';border:1.5px solid '+ocol+';border-radius:10px;padding:14px 18px;display:flex;align-items:center;gap:16px;">'+
+    '<div style="width:60px;height:60px;border-radius:50%;background:'+ocol+';display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;">'+
+    '<span style="color:#fff;font-weight:900;font-size:22px;line-height:1;">'+lastData.overall+'</span>'+
+    '<span style="color:rgba(255,255,255,.8);font-size:9px;">% RISK</span></div>'+
+    '<div style="flex:1;"><div style="color:'+otx+';font-weight:900;font-size:18px;">'+T('lbl_'+lastData.o_level.toLowerCase())+' '+T('lbl_overall_risk')+'</div>'+
+    '<div style="color:'+otx+';font-size:11px;margin-bottom:8px;">'+T('lbl_composite')+'</div>'+
+    '<div style="height:6px;background:rgba(255,255,255,.5);border-radius:3px;"><div style="height:100%;width:'+lastData.overall+'%;background:'+ocol+';border-radius:3px;"></div></div>'+
+    '</div></div>'+
+    // Section title
+    '<div style="margin:0 30px 10px;color:#7a9bbf;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;border-bottom:1px solid #162840;padding-bottom:6px;">'+T('lbl_per_disease')+'</div>'+
+    // Disease cards grid
+    '<div style="margin:0 30px 16px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">'+cardsHTML+'</div>'+
+    // Disclaimer
+    '<div style="margin:0 30px 16px;background:#fffbeb;border-radius:10px;padding:12px 14px;border-left:3px solid #d97706;">'+
+    '<div style="color:#92400e;font-weight:800;font-size:12px;margin-bottom:4px;">⚠ '+T('lbl_disclaimer_title')+'</div>'+
+    '<div style="color:#78350f;font-size:10px;line-height:1.5;">'+T('lbl_disclaimer')+'</div></div>'+
+    // Footer
+    '<div style="margin:0 30px 20px;border-top:1px solid #162840;padding-top:8px;display:flex;justify-content:space-between;align-items:center;">'+
+    '<span style="color:#3d5a7a;font-size:10px;">'+T('lbl_footer')+'</span>'+
+    '<span style="color:#3d5a7a;font-size:10px;">'+T('lbl_report_gen')+': '+tsStr+'</span>'+
+    '</div></div>';
+}
+
+async function generateMultiLangPDF(){
+  var selectedLangs=[];
+  ['en','hi','kn','te','ta'].forEach(function(l){
+    var cb=document.getElementById('pll-'+l);
+    if(cb&&cb.checked) selectedLangs.push(l);
+  });
+  if(selectedLangs.length===0){alert('Please select at least one language.');return;}
+
+  var btn=document.getElementById('pdfGenBtn');
+  var prog=document.getElementById('pdfGenProgress');
+  var modalBtns=document.getElementById('pdfModalBtns');
+  modalBtns.style.display='none';
+  prog.style.display='block';
+  btn.disabled=true;
+
+  function setProgress(pct,msg){
+    document.getElementById('pgfill').style.width=pct+'%';
+    document.getElementById('pgStatus').textContent=msg;
+  }
+
+  try{
+    var jsPDF=window.jspdf.jsPDF;
+    var doc=new jsPDF({orientation:'portrait',unit:'px',format:'a4'});
+    var pageW=doc.internal.pageSize.getWidth();
+    var pageH=doc.internal.pageSize.getHeight();
+
+    // Hidden render container
+    var container=document.createElement('div');
+    container.style.cssText='position:fixed;left:-9999px;top:0;z-index:-1;width:794px;';
+    document.body.appendChild(container);
+
+    for(var i=0;i<selectedLangs.length;i++){
+      var lang=selectedLangs[i];
+      var langNames={en:'English',hi:'Hindi',kn:'Kannada',te:'Telugu',ta:'Tamil'};
+      setProgress(Math.round((i/selectedLangs.length)*80), 'Rendering '+langNames[lang]+'...');
+
+      container.innerHTML=buildReportHTML(lang);
+      await new Promise(function(r){setTimeout(r,300);}); // let fonts render
+
+      var canvas=await html2canvas(container.firstChild,{
+        scale:1.5, useCORS:true, backgroundColor:'#030810',
+        width:794, logging:false
+      });
+
+      var imgData=canvas.toDataURL('image/jpeg',0.92);
+      var ratio=pageW/canvas.width;
+      var imgH=canvas.height*ratio;
+
+      if(i>0) doc.addPage();
+
+      // If content taller than page, tile it
+      if(imgH<=pageH){
+        doc.addImage(imgData,'JPEG',0,0,pageW,imgH);
+      } else {
+        var sliceH=Math.floor(pageH/ratio);
+        var sliceCount=Math.ceil(canvas.height/sliceH);
+        for(var s=0;s<sliceCount;s++){
+          if(s>0) doc.addPage();
+          var tmpC=document.createElement('canvas');
+          tmpC.width=canvas.width;
+          tmpC.height=Math.min(sliceH, canvas.height-s*sliceH);
+          var ctx=tmpC.getContext('2d');
+          ctx.drawImage(canvas,0,-s*sliceH);
+          doc.addImage(tmpC.toDataURL('image/jpeg',0.92),'JPEG',0,0,pageW,tmpC.height*ratio);
+        }
+      }
+    }
+
+    document.body.removeChild(container);
+    setProgress(95,'Saving PDF...');
+    await new Promise(function(r){setTimeout(r,200);});
+
+    var ts=lastData.timestamp;
+    var fname='AAROGYA_Report_'+lastData.patient.replace(/\s+/g,'_')+'_'+
+      ts.getFullYear()+('0'+(ts.getMonth()+1)).slice(-2)+('0'+ts.getDate()).slice(-2)+'.pdf';
+    doc.save(fname);
+    setProgress(100,'Done!');
+    setTimeout(closePdfModal,800);
+  } catch(e){
+    console.error(e);
+    alert('PDF generation failed: '+e.message);
+    modalBtns.style.display='flex';
+    prog.style.display='none';
+  }
+  btn.disabled=false;
+}
+</script>
+
+<!-- ===================== AI CHATBOT ===================== -->
+<style>
+/* ---------- Floating Robot ---------- */
+.chat-fab{position:fixed;bottom:28px;right:24px;z-index:1000;
+  width:60px;height:60px;border-radius:50%;border:none;cursor:pointer;
+  background:linear-gradient(135deg,#00d4ff,#7c3aed);
+  box-shadow:0 6px 28px rgba(0,212,255,.45);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.6rem;transition:all .3s;animation:fab-float 3s ease-in-out infinite;}
+.chat-fab:hover{transform:scale(1.12);box-shadow:0 10px 40px rgba(0,212,255,.6);}
+@keyframes fab-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.chat-fab:hover{animation:none;transform:scale(1.12);}
+.chat-badge{position:absolute;top:-4px;right:-4px;width:18px;height:18px;
+  background:#f43f8e;border-radius:50%;font-size:.55rem;font-weight:800;
+  color:#fff;display:grid;place-items:center;border:2px solid #030810;
+  display:none;}
+.chat-badge.show{display:grid;}
+
+/* ---------- Chat Window ---------- */
+.chat-window{position:fixed;bottom:100px;right:24px;z-index:999;
+  width:360px;max-width:calc(100vw - 32px);
+  background:#081224;border:1px solid rgba(0,212,255,.2);
+  border-radius:20px;box-shadow:0 24px 80px rgba(0,0,0,.8);
+  display:flex;flex-direction:column;overflow:hidden;
+  transform:scale(.85) translateY(40px);opacity:0;pointer-events:none;
+  transition:all .3s cubic-bezier(.34,1.56,.64,1);}
+.chat-window.open{transform:scale(1) translateY(0);opacity:1;pointer-events:all;}
+.chat-header{background:linear-gradient(135deg,rgba(0,212,255,.15),rgba(124,58,237,.1));
+  padding:.9rem 1.1rem;display:flex;align-items:center;gap:.7rem;
+  border-bottom:1px solid rgba(0,212,255,.12);}
+.chat-avatar{width:36px;height:36px;border-radius:50%;
+  background:linear-gradient(135deg,#00d4ff,#7c3aed);
+  display:grid;place-items:center;font-size:1.1rem;flex-shrink:0;}
+.chat-header-info strong{font-size:.85rem;font-weight:800;color:#e2eeff;display:block;}
+.chat-header-info span{font-size:.65rem;color:#00d4ff;}
+.chat-close-btn{margin-left:auto;background:none;border:none;color:#3d5a7a;
+  cursor:pointer;font-size:1.1rem;transition:color .2s;padding:2px;}
+.chat-close-btn:hover{color:#e2eeff;}
+.chat-msgs{flex:1;overflow-y:auto;padding:.9rem;display:flex;flex-direction:column;gap:.6rem;
+  min-height:220px;max-height:320px;scrollbar-width:thin;scrollbar-color:#162840 transparent;}
+.msg{display:flex;gap:.5rem;align-items:flex-end;}
+.msg.bot{align-self:flex-start;}
+.msg.user{align-self:flex-end;flex-direction:row-reverse;}
+.msg-bubble{max-width:82%;padding:.6rem .9rem;border-radius:14px;font-size:.78rem;line-height:1.55;}
+.msg.bot .msg-bubble{background:#0c1830;border:1px solid rgba(0,212,255,.12);color:#e2eeff;border-bottom-left-radius:4px;}
+.msg.user .msg-bubble{background:linear-gradient(135deg,rgba(0,212,255,.2),rgba(124,58,237,.2));
+  border:1px solid rgba(0,212,255,.2);color:#e2eeff;border-bottom-right-radius:4px;}
+.msg-avatar{width:26px;height:26px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,#00d4ff,#7c3aed);
+  display:grid;place-items:center;font-size:.8rem;}
+.typing-dots{display:flex;gap:3px;padding:.5rem .9rem;}
+.typing-dots span{width:6px;height:6px;border-radius:50%;background:#7a9bbf;
+  animation:dot-bounce .9s infinite;}
+.typing-dots span:nth-child(2){animation-delay:.15s;}
+.typing-dots span:nth-child(3){animation-delay:.3s;}
+@keyframes dot-bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
+.chat-quick{display:flex;flex-wrap:wrap;gap:.4rem;padding:.5rem .9rem .3rem;border-top:1px solid rgba(0,212,255,.08);}
+.quick-btn{padding:.32rem .75rem;border-radius:999px;font-size:.68rem;font-weight:600;
+  background:rgba(0,212,255,.08);border:1px solid rgba(0,212,255,.18);
+  color:#00d4ff;cursor:pointer;transition:all .2s;}
+.quick-btn:hover{background:rgba(0,212,255,.15);}
+.chat-input-row{display:flex;gap:.5rem;padding:.7rem .9rem;border-top:1px solid rgba(0,212,255,.1);}
+.chat-input{flex:1;background:rgba(255,255,255,.03);border:1px solid #162840;
+  border-radius:10px;padding:.5rem .8rem;color:#e2eeff;font-family:'Space Grotesk',sans-serif;
+  font-size:.78rem;outline:none;transition:border-color .2s;}
+.chat-input:focus{border-color:rgba(0,212,255,.4);}
+.chat-send{padding:.5rem .85rem;border-radius:10px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,#00d4ff,#7c3aed);color:#fff;
+  font-size:.85rem;transition:all .2s;}
+.chat-send:hover{transform:scale(1.05);}
+
+/* ---------- Book Appointment Button in chat ---------- */
+.book-appt-btn{width:100%;margin-top:.5rem;padding:.65rem 1rem;border-radius:10px;border:none;
+  cursor:pointer;background:linear-gradient(135deg,#25D366,#128C7E);
+  color:#fff;font-weight:700;font-size:.78rem;display:flex;align-items:center;
+  justify-content:center;gap:.5rem;transition:all .2s;font-family:'Space Grotesk',sans-serif;}
+.book-appt-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(37,211,102,.35);}
+</style>
+
+<!-- Floating Chat Button -->
+<button class="chat-fab" id="chatFab" onclick="toggleChat()" title="AI Health Assistant">
+  🤖
+  <div class="chat-badge" id="chatBadge">1</div>
+</button>
+
+<!-- Chat Window -->
+<div class="chat-window" id="chatWindow">
+  <div class="chat-header">
+    <div class="chat-avatar">🤖</div>
+    <div class="chat-header-info">
+      <strong id="chatHeaderName">AAROGYA AI Assistant</strong>
+      <span id="chatOnlineStatus">● Online · Health AI Assistant</span>
+    </div>
+    <button class="chat-close-btn" onclick="toggleChat()">✕</button>
+  </div>
+  <div class="chat-msgs" id="chatMsgs"></div>
+  <div class="chat-quick" id="chatQuick"></div>
+  <div class="chat-input-row">
+    <input class="chat-input" id="chatInput" placeholder="Ask about remedies, diet, lifestyle…" onkeydown="if(event.key==='Enter')sendChatMsg()"/>
+    <button class="chat-send" onclick="sendChatMsg()">➤</button>
+  </div>
+</div>
+
+<script>
+// ========================== LANGUAGE ENGINE ==========================
+var CURRENT_LANG = 'en';
+
+var TRANSLATIONS = {
+  en: {
+    logo_sub: "Advanced Disease Risk Platform",
+    hero_eyebrow: "🔬 Symptom-Based · Gender-Aware · No Lab Tests Required",
+    hero_h1: "Detect Disease Risk",
+    hero_h1b: "Before It's Too Late",
+    hero_p: "Fill in your symptoms. Our AI analyses risk for heart disease, diabetes, cancer, liver, kidney, thyroid & more — personalised by your biology.",
+    s1_title: "Personal Identity", s1_sub: "Your name, age and biological sex",
+    lbl_name: "Full Name", lbl_age: "Age (years)", lbl_gender: "Biological Sex",
+    gender_f: "Female", gender_m: "Male",
+    s2_title: "Body Measurements", s2_sub: "Height, weight and known conditions",
+    sub_physical: "Physical", sub_known: "Known Conditions",
+    lbl_height: "Height (cm)", lbl_weight: "Weight (kg)", lbl_waist: "Waist (inches)",
+    btn_predict: "🔬   Predict My Disease Risk",
+    loading_txt: "Analysing all symptom inputs…",
+    loading_sub: "Running disease-specific scoring models",
+    results_title: "Your Health Risk Report",
+    results_sub: "Each disease scored independently based only on its own symptoms",
+    chat_greeting_results: "👋 Hi! I'm your <strong>AAROGYA AI Health Assistant</strong>.<br>I've analysed your results. Diseases detected: {list}.<br><br>🔔 Would you like to know <strong>remedies for {top}</strong>?",
+    chat_greeting_empty: "👋 Hello! I'm your <strong>AAROGYA AI Health Assistant</strong>.<br>Run your <strong>disease risk prediction</strong> first and I'll give you personalised remedies!<br><br>Or just type any disease name — <em>heart, diabetes, liver, kidney, thyroid, pcos, breast, prostate, lung</em>",
+    chat_book_msg: "📋 Our medical team is available via WhatsApp. I'll send your details so they can confirm a slot within 24 hours!",
+    chat_header: "AAROGYA AI Assistant",
+    chat_online: "● Online · Health AI Assistant",
+    chat_placeholder: "Ask about remedies, diet, lifestyle…",
+    wa_greeting: "Hello AAROGYA AI Team,\n\nI would like to book an appointment.\n\nName: {name}\nCondition: {disease}{risk}\n\nPlease let me know available slots. Thank you!",
+    btn_book_wa: "📲 Book Appointment via WhatsApp",
+    qr_heart: "Heart Remedies", qr_diabetes: "Diabetes Remedies", qr_liver: "Liver Remedies",
+    qr_kidney: "Kidney Remedies", qr_pcos: "PCOS Remedies", qr_thyroid: "Thyroid Remedies",
+    qr_breast: "Breast Remedies", qr_prostate: "Prostate Remedies", qr_lung: "Lung Remedies",
+    qr_book: "Book Appointment", qr_diet: "Diet Tips", qr_exercise: "Exercise Tips", qr_severe: "Severe Signs",
+    // chatbot labels
+    label_diet: "Diet Guide", label_exercise: "Exercise Plan",
+    label_warning: "Warning Signs — See Doctor Immediately",
+    label_remedies: "Remedies & Management",
+    label_high_risk: "Your risk is high. Please consult a doctor soon.",
+    chat_fallback: "Please type a disease name like heart, diabetes, liver, kidney, thyroid, pcos, breast, prostate, lung — or use the quick buttons!",
+    // Result card & PDF strings
+    no_symptoms: "No symptoms detected", based_on: "Based on your inputs",
+    lbl_low: "LOW", lbl_moderate: "MODERATE", lbl_high: "HIGH", lbl_critical: "CRITICAL",
+    lbl_overall_risk: "OVERALL RISK", lbl_male: "MALE", lbl_female: "FEMALE",
+    lbl_per_disease: "PER-DISEASE RISK BREAKDOWN", lbl_generated: "Generated",
+    lbl_report_sub: "Advanced Disease Risk Platform  |  Health Risk Report",
+    lbl_composite: "Composite score across all assessed disease categories",
+    lbl_pdf_inputs: "Based on reported inputs",
+    lbl_disclaimer_title: "Medical Disclaimer",
+    lbl_disclaimer: "This report is for informational and educational purposes only. It does not constitute medical advice, diagnosis or treatment. Risk scores are based on self-reported symptoms and should not replace professional clinical evaluation. Always consult a qualified healthcare professional for medical guidance.",
+    lbl_footer: "AAROGYA AI  |  Advanced Disease Risk Platform",
+    lbl_footer2: "This document was auto-generated. For clinical use, all findings must be verified by a licensed medical professional.",
+    lbl_report_gen: "Report generated",
+  },
+
+  hi: {
+    logo_sub: "उन्नत रोग जोखिम मंच",
+    hero_eyebrow: "🔬 लक्षण-आधारित · लिंग-जागरूक · कोई लैब परीक्षण नहीं",
+    hero_h1: "बीमारी का खतरा पहचानें",
+    hero_h1b: "देर होने से पहले",
+    hero_p: "अपने लक्षण भरें। हमारी AI हृदय रोग, मधुमेह, कैंसर, यकृत, गुर्दे, थायरॉइड और अधिक के लिए जोखिम का विश्लेषण करती है।",
+    s1_title: "व्यक्तिगत पहचान", s1_sub: "आपका नाम, उम्र और जैविक लिंग",
+    lbl_name: "पूरा नाम", lbl_age: "आयु (वर्ष)", lbl_gender: "जैविक लिंग",
+    gender_f: "महिला", gender_m: "पुरुष",
+    s2_title: "शारीरिक माप", s2_sub: "ऊंचाई, वजन और ज्ञात बीमारियां",
+    sub_physical: "शारीरिक", sub_known: "ज्ञात स्थितियां",
+    lbl_height: "ऊंचाई (सेमी)", lbl_weight: "वजन (किग्रा)", lbl_waist: "कमर (इंच)",
+    btn_predict: "🔬   मेरी बीमारी का जोखिम पहचानें",
+    loading_txt: "सभी लक्षणों का विश्लेषण हो रहा है…",
+    loading_sub: "रोग-विशिष्ट मॉडल चल रहे हैं",
+    results_title: "आपकी स्वास्थ्य जोखिम रिपोर्ट",
+    results_sub: "प्रत्येक बीमारी को केवल उसके अपने लक्षणों के आधार पर स्कोर किया गया है",
+    chat_greeting_results: "👋 नमस्ते! मैं आपका <strong>AAROGYA AI स्वास्थ्य सहायक</strong> हूँ।<br>मैंने आपके परिणाम देखे। पहचानी गई बीमारियां: {list}।<br><br>🔔 क्या आप <strong>{top} के उपाय</strong> जानना चाहते हैं?",
+    chat_greeting_empty: "👋 नमस्ते! मैं आपका <strong>AAROGYA AI स्वास्थ्य सहायक</strong> हूँ।<br>पहले <strong>बीमारी जोखिम भविष्यवाणी</strong> चलाएं और मैं आपको व्यक्तिगत उपाय दूंगा!<br><br>या कोई बीमारी का नाम टाइप करें — <em>हृदय, मधुमेह, यकृत, गुर्दा, थायरॉइड, पीसीओएस, स्तन, प्रोस्टेट, फेफड़ा</em>",
+    chat_book_msg: "📋 हमारी चिकित्सा टीम WhatsApp पर उपलब्ध है। मैं आपका विवरण भेजूंगा ताकि वे 24 घंटे में समय की पुष्टि कर सकें!",
+    chat_header: "AAROGYA AI सहायक",
+    chat_online: "● ऑनलाइन · स्वास्थ्य AI सहायक",
+    chat_placeholder: "उपाय, आहार, जीवनशैली के बारे में पूछें…",
+    wa_greeting: "नमस्ते AAROGYA AI टीम,\n\nमैं एक अपॉइंटमेंट बुक करना चाहता/चाहती हूँ।\n\nनाम: {name}\nस्थिति: {disease}{risk}\n\nकृपया उपलब्ध समय बताएं। धन्यवाद!",
+    btn_book_wa: "📲 WhatsApp पर अपॉइंटमेंट बुक करें",
+    qr_heart: "हृदय उपाय", qr_diabetes: "मधुमेह उपाय", qr_liver: "यकृत उपाय",
+    qr_kidney: "गुर्दा उपाय", qr_pcos: "पीसीओएस उपाय", qr_thyroid: "थायरॉइड उपाय",
+    qr_breast: "स्तन उपाय", qr_prostate: "प्रोस्टेट उपाय", qr_lung: "फेफड़ा उपाय",
+    qr_book: "अपॉइंटमेंट बुक करें", qr_diet: "आहार सुझाव", qr_exercise: "व्यायाम सुझाव", qr_severe: "गंभीर संकेत",
+    label_diet: "आहार मार्गदर्शिका", label_exercise: "व्यायाम योजना",
+    label_warning: "चेतावनी संकेत — तुरंत डॉक्टर से मिलें",
+    label_remedies: "उपाय एवं प्रबंधन",
+    label_high_risk: "आपका जोखिम अधिक है। कृपया जल्द डॉक्टर से परामर्श लें।",
+    chat_fallback: "कोई बीमारी का नाम टाइप करें जैसे हृदय, मधुमेह, यकृत, गुर्दा, थायरॉइड, पीसीओएस, स्तन, प्रोस्टेट, फेफड़ा — या बटन दबाएं!",
+    no_symptoms: "कोई लक्षण नहीं मिले", based_on: "आपके इनपुट के आधार पर",
+    lbl_low: "कम", lbl_moderate: "मध्यम", lbl_high: "उच्च", lbl_critical: "गंभीर",
+    lbl_overall_risk: "कुल जोखिम", lbl_male: "पुरुष", lbl_female: "महिला",
+    lbl_per_disease: "प्रति-रोग जोखिम विवरण", lbl_generated: "निर्मित",
+    lbl_report_sub: "उन्नत रोग जोखिम मंच  |  स्वास्थ्य जोखिम रिपोर्ट",
+    lbl_composite: "सभी मूल्यांकित रोग श्रेणियों का समग्र स्कोर",
+    lbl_pdf_inputs: "रिपोर्ट किए गए इनपुट के आधार पर",
+    lbl_disclaimer_title: "चिकित्सा अस्वीकरण",
+    lbl_disclaimer: "यह रिपोर्ट केवल सूचनात्मक और शैक्षिक उद्देश्यों के लिए है। यह चिकित्सा सलाह, निदान या उपचार नहीं है। जोखिम स्कोर स्व-रिपोर्ट किए गए लक्षणों पर आधारित हैं और पेशेवर नैदानिक मूल्यांकन की जगह नहीं ले सकते।",
+    lbl_footer: "AAROGYA AI  |  उन्नत रोग जोखिम मंच",
+    lbl_footer2: "यह दस्तावेज़ स्वचालित रूप से तैयार किया गया है। नैदानिक उपयोग के लिए सभी निष्कर्षों को लाइसेंस प्राप्त चिकित्सा पेशेवर द्वारा सत्यापित किया जाना चाहिए।",
+    lbl_report_gen: "रिपोर्ट निर्मित",
+  },
+
+  kn: {
+    logo_sub: "ಸುಧಾರಿತ ರೋಗ ಅಪಾಯ ವೇದಿಕೆ",
+    hero_eyebrow: "🔬 ಲಕ್ಷಣ-ಆಧಾರಿತ · ಲಿಂಗ-ಅರಿವು · ಲ್ಯಾಬ್ ಪರೀಕ್ಷೆ ಅಗತ್ಯವಿಲ್ಲ",
+    hero_h1: "ರೋಗದ ಅಪಾಯ ಪತ್ತೆ ಮಾಡಿ",
+    hero_h1b: "ತಡವಾಗುವ ಮೊದಲು",
+    hero_p: "ನಿಮ್ಮ ಲಕ್ಷಣಗಳನ್ನು ನಮೂದಿಸಿ. ನಮ್ಮ AI ಹೃದ್ರೋಗ, ಮಧುಮೇಹ, ಕ್ಯಾನ್ಸರ್, ಯಕೃತ್ತು, ಮೂತ್ರಪಿಂಡ, ಥೈರಾಯ್ಡ್ ಮತ್ತು ಹೆಚ್ಚಿನವುಗಳ ಅಪಾಯವನ್ನು ವಿಶ್ಲೇಷಿಸುತ್ತದೆ.",
+    s1_title: "ವೈಯಕ್ತಿಕ ಗುರುತು", s1_sub: "ನಿಮ್ಮ ಹೆಸರು, ವಯಸ್ಸು ಮತ್ತು ಜೈವಿಕ ಲಿಂಗ",
+    lbl_name: "ಪೂರ್ಣ ಹೆಸರು", lbl_age: "ವಯಸ್ಸು (ವರ್ಷಗಳು)", lbl_gender: "ಜೈವಿಕ ಲಿಂಗ",
+    gender_f: "ಮಹಿಳೆ", gender_m: "ಪುರುಷ",
+    s2_title: "ದೇಹ ಅಳತೆಗಳು", s2_sub: "ಎತ್ತರ, ತೂಕ ಮತ್ತು ತಿಳಿದಿರುವ ಕಾಯಿಲೆಗಳು",
+    sub_physical: "ದೈಹಿಕ", sub_known: "ತಿಳಿದಿರುವ ಸ್ಥಿತಿಗಳು",
+    lbl_height: "ಎತ್ತರ (ಸೆಮೀ)", lbl_weight: "ತೂಕ (ಕೆಜಿ)", lbl_waist: "ಸೊಂಟ (ಇಂಚು)",
+    btn_predict: "🔬   ನನ್ನ ರೋಗದ ಅಪಾಯ ಪ್ರಾಮಾಣಿಸಿ",
+    loading_txt: "ಎಲ್ಲಾ ಲಕ್ಷಣಗಳನ್ನು ವಿಶ್ಲೇಷಿಸಲಾಗುತ್ತಿದೆ…",
+    loading_sub: "ರೋಗ-ನಿರ್ದಿಷ್ಟ ಮಾದರಿಗಳನ್ನು ರನ್ ಮಾಡಲಾಗುತ್ತಿದೆ",
+    results_title: "ನಿಮ್ಮ ಆರೋಗ್ಯ ಅಪಾಯ ವರದಿ",
+    results_sub: "ಪ್ರತಿ ರೋಗವನ್ನು ಅದರ ಸ್ವಂತ ಲಕ್ಷಣಗಳ ಆಧಾರದ ಮೇಲೆ ಸ್ವತಂತ್ರವಾಗಿ ಸ್ಕೋರ್ ಮಾಡಲಾಗಿದೆ",
+    chat_greeting_results: "👋 ನಮಸ್ಕಾರ! ನಾನು ನಿಮ್ಮ <strong>AAROGYA AI ಆರೋಗ್ಯ ಸಹಾಯಕ</strong>.<br>ನಿಮ್ಮ ಫಲಿತಾಂಶಗಳನ್ನು ನೋಡಿದೆ. ಪತ್ತೆಯಾದ ರೋಗಗಳು: {list}.<br><br>🔔 <strong>{top} ಗೆ ಪರಿಹಾರಗಳು</strong> ತಿಳಿಯಲು ಬಯಸುವಿರಾ?",
+    chat_greeting_empty: "👋 ನಮಸ್ಕಾರ! ನಾನು ನಿಮ್ಮ <strong>AAROGYA AI ಆರೋಗ್ಯ ಸಹಾಯಕ</strong>.<br>ಮೊದಲು <strong>ರೋಗ ಅಪಾಯ ಭವಿಷ್ಯವಾಣಿ</strong> ಚಲಾಯಿಸಿ ಮತ್ತು ನಾನು ನಿಮಗೆ ವೈಯಕ್ತಿಕ ಪರಿಹಾರಗಳನ್ನು ನೀಡುತ್ತೇನೆ!",
+    chat_book_msg: "📋 ನಮ್ಮ ವೈದ್ಯಕೀಯ ತಂಡ WhatsApp ನಲ್ಲಿ ಲಭ್ಯವಿದೆ. 24 ಗಂಟೆಯಲ್ಲಿ ಸಮಯ ದೃಢಪಡಿಸಲಾಗುವುದು!",
+    chat_header: "AAROGYA AI ಸಹಾಯಕ",
+    chat_online: "● ಆನ್‌ಲೈನ್ · ಆರೋಗ್ಯ AI ಸಹಾಯಕ",
+    chat_placeholder: "ಪರಿಹಾರ, ಆಹಾರ, ಜೀವನಶೈಲಿ ಬಗ್ಗೆ ಕೇಳಿ…",
+    wa_greeting: "ನಮಸ್ಕಾರ AAROGYA AI ತಂಡ,\n\nನಾನು ಅಪಾಯಿಂಟ್‌ಮೆಂಟ್ ಬುಕ್ ಮಾಡಲು ಬಯಸುತ್ತೇನೆ.\n\nಹೆಸರು: {name}\nಸ್ಥಿತಿ: {disease}{risk}\n\nಲಭ್ಯವಿರುವ ಸಮಯ ತಿಳಿಸಿ. ಧನ್ಯವಾದಗಳು!",
+    btn_book_wa: "📲 WhatsApp ನಲ್ಲಿ ಅಪಾಯಿಂಟ್‌ಮೆಂಟ್ ಬುಕ್ ಮಾಡಿ",
+    qr_heart: "ಹೃದಯ ಪರಿಹಾರ", qr_diabetes: "ಮಧುಮೇಹ ಪರಿಹಾರ", qr_liver: "ಯಕೃತ್ತು ಪರಿಹಾರ",
+    qr_kidney: "ಮೂತ್ರಪಿಂಡ ಪರಿಹಾರ", qr_pcos: "ಪಿಸಿಒಎಸ್ ಪರಿಹಾರ", qr_thyroid: "ಥೈರಾಯ್ಡ್ ಪರಿಹಾರ",
+    qr_breast: "ಸ್ತನ ಪರಿಹಾರ", qr_prostate: "ಪ್ರಾಸ್ಟೇಟ್ ಪರಿಹಾರ", qr_lung: "ಶ್ವಾಸಕೋಶ ಪರಿಹಾರ",
+    qr_book: "ಅಪಾಯಿಂಟ್‌ಮೆಂಟ್ ಬುಕ್ ಮಾಡಿ", qr_diet: "ಆಹಾರ ಸಲಹೆ", qr_exercise: "ವ್ಯಾಯಾಮ ಸಲಹೆ", qr_severe: "ತೀವ್ರ ಚಿಹ್ನೆಗಳು",
+    label_diet: "ಆಹಾರ ಮಾರ್ಗದರ್ಶಿ", label_exercise: "ವ್ಯಾಯಾಮ ಯೋಜನೆ",
+    label_warning: "ಎಚ್ಚರಿಕೆ ಚಿಹ್ನೆಗಳು — ತಕ್ಷಣ ವೈದ್ಯರನ್ನು ಭೇಟಿ ಮಾಡಿ",
+    label_remedies: "ಪರಿಹಾರಗಳು ಮತ್ತು ನಿರ್ವಹಣೆ",
+    label_high_risk: "ನಿಮ್ಮ ಅಪಾಯ ಹೆಚ್ಚಾಗಿದೆ. ದಯವಿಟ್ಟು ಶೀಘ್ರದಲ್ಲಿ ವೈದ್ಯರನ್ನು ಸಂಪರ್ಕಿಸಿ.",
+    chat_fallback: "ಹೃದಯ, ಮಧುಮೇಹ, ಯಕೃತ್ತು, ಮೂತ್ರಪಿಂಡ, ಥೈರಾಯ್ಡ್, ಪಿಸಿಒಎಸ್, ಸ್ತನ, ಪ್ರಾಸ್ಟೇಟ್, ಶ್ವಾಸಕೋಶ — ಇವುಗಳಲ್ಲಿ ಯಾವುದಾದರು ಟೈಪ್ ಮಾಡಿ ಅಥವಾ ಬಟನ್ ಒತ್ತಿರಿ!",
+    no_symptoms: "ಯಾವುದೇ ಲಕ್ಷಣಗಳಿಲ್ಲ", based_on: "ನಿಮ್ಮ ಮಾಹಿತಿ ಆಧಾರದ ಮೇಲೆ",
+    lbl_low: "ಕಡಿಮೆ", lbl_moderate: "ಮಧ್ಯಮ", lbl_high: "ಅಧಿಕ", lbl_critical: "ಗಂಭೀರ",
+    lbl_overall_risk: "ಒಟ್ಟಾರೆ ಅಪಾಯ", lbl_male: "ಪುರುಷ", lbl_female: "ಮಹಿಳೆ",
+    lbl_per_disease: "ಪ್ರತಿ ರೋಗದ ಅಪಾಯ ವಿವರ", lbl_generated: "ರಚಿತ",
+    lbl_report_sub: "ಸುಧಾರಿತ ರೋಗ ಅಪಾಯ ವೇದಿಕೆ  |  ಆರೋಗ್ಯ ಅಪಾಯ ವರದಿ",
+    lbl_composite: "ಎಲ್ಲಾ ಮೌಲ್ಯಮಾಪನ ಮಾಡಿದ ರೋಗ ವರ್ಗಗಳ ಸಮಗ್ರ ಸ್ಕೋರ್",
+    lbl_pdf_inputs: "ವರದಿ ಮಾಡಿದ ಮಾಹಿತಿ ಆಧಾರದ ಮೇಲೆ",
+    lbl_disclaimer_title: "ವೈದ್ಯಕೀಯ ಹಕ್ಕುತ್ಯಾಗ",
+    lbl_disclaimer: "ಈ ವರದಿ ಕೇವಲ ಮಾಹಿತಿ ಮತ್ತು ಶಿಕ್ಷಣ ಉದ್ದೇಶಗಳಿಗಾಗಿ ಮಾತ್ರ. ಇದು ವೈದ್ಯಕೀಯ ಸಲಹೆ, ರೋಗನಿರ್ಣಯ ಅಥವಾ ಚಿಕಿತ್ಸೆ ಅಲ್ಲ. ಅಪಾಯದ ಸ್ಕೋರ್‌ಗಳು ಸ್ವಯಂ-ವರದಿ ಮಾಡಿದ ಲಕ್ಷಣಗಳ ಮೇಲೆ ಆಧಾರಿತವಾಗಿವೆ.",
+    lbl_footer: "AAROGYA AI  |  ಸುಧಾರಿತ ರೋಗ ಅಪಾಯ ವೇದಿಕೆ",
+    lbl_footer2: "ಈ ದಾಖಲೆ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ರಚಿಸಲಾಗಿದೆ. ನೈದಾನಿಕ ಬಳಕೆಗಾಗಿ ಎಲ್ಲಾ ಸಂಶೋಧನೆಗಳನ್ನು ಪರವಾನಗಿ ಪಡೆದ ವೈದ್ಯರು ಪರಿಶೀಲಿಸಬೇಕು.",
+    lbl_report_gen: "ವರದಿ ರಚಿತ",
+  },
+
+  te: {
+    logo_sub: "అధునాతన వ్యాధి ప్రమాద వేదిక",
+    hero_eyebrow: "🔬 లక్షణ-ఆధారిత · లింగ-అవగాహన · లాబ్ పరీక్షలు అవసరం లేదు",
+    hero_h1: "వ్యాధి ప్రమాదాన్ని గుర్తించండి",
+    hero_h1b: "ఆలస్యం అవ్వకముందే",
+    hero_p: "మీ లక్షణాలను నమోదు చేయండి. మా AI హృదయ వ్యాధి, మధుమేహం, క్యాన్సర్, కాలేయం, మూత్రపిండాలు, థైరాయిడ్ మరియు మరెన్నింటికి ప్రమాదాన్ని విశ్లేషిస్తుంది.",
+    s1_title: "వ్యక్తిగత గుర్తింపు", s1_sub: "మీ పేరు, వయసు మరియు జీవ లింగం",
+    lbl_name: "పూర్తి పేరు", lbl_age: "వయసు (సంవత్సరాలు)", lbl_gender: "జీవ లింగం",
+    gender_f: "స్త్రీ", gender_m: "పురుషుడు",
+    s2_title: "శరీర కొలతలు", s2_sub: "ఎత్తు, బరువు మరియు తెలిసిన వ్యాధులు",
+    sub_physical: "శారీరక", sub_known: "తెలిసిన పరిస్థితులు",
+    lbl_height: "ఎత్తు (సెమీ)", lbl_weight: "బరువు (కెజీ)", lbl_waist: "నడుము (అంగుళాలు)",
+    btn_predict: "🔬   నా వ్యాధి ప్రమాదాన్ని అంచనా వేయండి",
+    loading_txt: "అన్ని లక్షణాలు విశ్లేషించబడుతున్నాయి…",
+    loading_sub: "వ్యాధి-నిర్దిష్ట నమూనాలు అమలవుతున్నాయి",
+    results_title: "మీ ఆరోగ్య ప్రమాద నివేదిక",
+    results_sub: "ప్రతి వ్యాధి దాని స్వంత లక్షణాల ఆధారంగా స్వతంత్రంగా స్కోర్ చేయబడింది",
+    chat_greeting_results: "👋 నమస్కారం! నేను మీ <strong>AAROGYA AI ఆరోగ్య సహాయకుడు</strong>.<br>మీ ఫలితాలు విశ్లేషించాను. గుర్తించిన వ్యాధులు: {list}.<br><br>🔔 <strong>{top} పరిష్కారాలు</strong> తెలుసుకోవాలా?",
+    chat_greeting_empty: "👋 నమస్కారం! నేను మీ <strong>AAROGYA AI ఆరోగ్య సహాయకుడు</strong>.<br>ముందు <strong>వ్యాధి ప్రమాద అంచనా</strong> అమలు చేయండి, తర్వాత నేను వ్యక్తిగత పరిష్కారాలు అందిస్తాను!",
+    chat_book_msg: "📋 మా వైద్య బృందం WhatsApp లో అందుబాటులో ఉంది. 24 గంటల్లో సమయం నిర్ధారిస్తారు!",
+    chat_header: "AAROGYA AI సహాయకుడు",
+    chat_online: "● ఆన్‌లైన్ · ఆరోగ్య AI సహాయకుడు",
+    chat_placeholder: "పరిష్కారాలు, ఆహారం, జీవనశైలి గురించి అడగండి…",
+    wa_greeting: "నమస్కారం AAROGYA AI బృందం,\n\nనేను అపాయింట్‌మెంట్ బుక్ చేసుకోవాలనుకుంటున్నాను.\n\nపేరు: {name}\nపరిస్థితి: {disease}{risk}\n\nఅందుబాటులో ఉన్న సమయాలు తెలపండి. ధన్యవాదాలు!",
+    btn_book_wa: "📲 WhatsApp లో అపాయింట్‌మెంట్ బుక్ చేయండి",
+    qr_heart: "హృదయ పరిష్కారాలు", qr_diabetes: "మధుమేహ పరిష్కారాలు", qr_liver: "కాలేయ పరిష్కారాలు",
+    qr_kidney: "మూత్రపిండ పరిష్కారాలు", qr_pcos: "పిసిఓఎస్ పరిష్కారాలు", qr_thyroid: "థైరాయిడ్ పరిష్కారాలు",
+    qr_breast: "స్తన పరిష్కారాలు", qr_prostate: "ప్రోస్టేట్ పరిష్కారాలు", qr_lung: "ఊపిరితిత్తుల పరిష్కారాలు",
+    qr_book: "అపాయింట్‌మెంట్ బుక్ చేయండి", qr_diet: "ఆహార చిట్కాలు", qr_exercise: "వ్యాయామ చిట్కాలు", qr_severe: "తీవ్రమైన సంకేతాలు",
+    label_diet: "ఆహార మార్గదర్శి", label_exercise: "వ్యాయామ ప్రణాళిక",
+    label_warning: "హెచ్చరిక సంకేతాలు — వెంటనే వైద్యుడిని సంప్రదించండి",
+    label_remedies: "పరిష్కారాలు మరియు నిర్వహణ",
+    label_high_risk: "మీ ప్రమాదం ఎక్కువగా ఉంది. దయచేసి త్వరలో వైద్యుడిని సందర్శించండి.",
+    chat_fallback: "హృదయం, మధుమేహం, కాలేయం, మూత్రపిండాలు, థైరాయిడ్, పిసిఓఎస్, స్తనం, ప్రోస్టేట్, ఊపిరితిత్తులు — అని టైప్ చేయండి లేదా బటన్ నొక్కండి!",
+    no_symptoms: "లక్షణాలు కనుగొనబడలేదు", based_on: "మీ సమాచారం ఆధారంగా",
+    lbl_low: "తక్కువ", lbl_moderate: "మధ్యస్థం", lbl_high: "అధిక", lbl_critical: "తీవ్రమైన",
+    lbl_overall_risk: "మొత్తం ప్రమాదం", lbl_male: "పురుషుడు", lbl_female: "స్త్రీ",
+    lbl_per_disease: "వ్యాధి-వారీ ప్రమాద వివరణ", lbl_generated: "రూపొందించబడింది",
+    lbl_report_sub: "అధునాతన వ్యాధి ప్రమాద వేదిక  |  ఆరోగ్య ప్రమాద నివేదిక",
+    lbl_composite: "అన్ని అంచనా వేయబడిన వ్యాధి వర్గాల సమ్మిళిత స్కోరు",
+    lbl_pdf_inputs: "నివేదించిన సమాచారం ఆధారంగా",
+    lbl_disclaimer_title: "వైద్య నిరాకరణ",
+    lbl_disclaimer: "ఈ నివేదిక కేవలం సమాచార మరియు విద్యా ప్రయోజనాల కోసం మాత్రమే. ఇది వైద్య సలహా, నిర్ధారణ లేదా చికిత్స కాదు. రిస్క్ స్కోర్‌లు స్వయంగా నివేదించిన లక్షణాలపై ఆధారపడి ఉంటాయి.",
+    lbl_footer: "AAROGYA AI  |  అధునాతన వ్యాధి ప్రమాద వేదిక",
+    lbl_footer2: "ఈ పత్రం స్వయంచాలకంగా రూపొందించబడింది. వైద్య అవసరాల కోసం అన్ని ఫలితాలను లైసెన్స్ పొందిన వైద్యుడు ధృవీకరించాలి.",
+    lbl_report_gen: "నివేదిక రూపొందించబడింది",
+  },
+
+  ta: {
+    logo_sub: "மேம்பட்ட நோய் அபாய தளம்",
+    hero_eyebrow: "🔬 அறிகுறி-அடிப்படையிலான · பாலினம்-விழிப்புணர்வு · ஆய்வக சோதனைகள் தேவையில்லை",
+    hero_h1: "நோய் அபாயத்தை கண்டறியுங்கள்",
+    hero_h1b: "தாமதமாவதற்கு முன்பே",
+    hero_p: "உங்கள் அறிகுறிகளை உள்ளிடுங்கள். எங்கள் AI இதய நோய், நீரிழிவு, புற்றுநோய், கல்லீரல், சிறுநீரகம், தைராய்டு மற்றும் பலவற்றுக்கான அபாயத்தை பகுப்பாய்வு செய்கிறது.",
+    s1_title: "தனிப்பட்ட அடையாளம்", s1_sub: "உங்கள் பெயர், வயது மற்றும் உயிரியல் பாலினம்",
+    lbl_name: "முழு பெயர்", lbl_age: "வயது (ஆண்டுகள்)", lbl_gender: "உயிரியல் பாலினம்",
+    gender_f: "பெண்", gender_m: "ஆண்",
+    s2_title: "உடல் அளவீடுகள்", s2_sub: "உயரம், எடை மற்றும் தெரிந்த நோய்கள்",
+    sub_physical: "உடல் சார்ந்த", sub_known: "தெரிந்த நிலைகள்",
+    lbl_height: "உயரம் (செமீ)", lbl_weight: "எடை (கிலோ)", lbl_waist: "இடுப்பு (அங்குலம்)",
+    btn_predict: "🔬   என் நோய் அபாயத்தை கணிக்கவும்",
+    loading_txt: "அனைத்து அறிகுறிகளும் பகுப்பாய்வு செய்யப்படுகின்றன…",
+    loading_sub: "நோய்-குறிப்பிட்ட மாதிரிகள் இயங்குகின்றன",
+    results_title: "உங்கள் சுகாதார அபாய அறிக்கை",
+    results_sub: "ஒவ்வொரு நோயும் அதன் சொந்த அறிகுறிகளின் அடிப்படையில் தனித்தனியாக மதிப்பிடப்பட்டுள்ளது",
+    chat_greeting_results: "👋 வணக்கம்! நான் உங்கள் <strong>AAROGYA AI சுகாதார உதவியாளர்</strong>.<br>உங்கள் முடிவுகளை பகுப்பாய்வு செய்தேன். கண்டறியப்பட்ட நோய்கள்: {list}.<br><br>🔔 <strong>{top} தீர்வுகள்</strong> தெரிந்துகொள்ள விரும்புகிறீர்களா?",
+    chat_greeting_empty: "👋 வணக்கம்! நான் உங்கள் <strong>AAROGYA AI சுகாதார உதவியாளர்</strong>.<br>முதலில் <strong>நோய் அபாய கணிப்பை</strong> இயக்கவும், பின்னர் நான் தனிப்பயனாக்கப்பட்ட தீர்வுகளை வழங்குவேன்!",
+    chat_book_msg: "📋 எங்கள் மருத்துவ குழு WhatsApp இல் கிடைக்கும். 24 மணி நேரத்தில் நேரத்தை உறுதிப்படுத்துவார்கள்!",
+    chat_header: "AAROGYA AI உதவியாளர்",
+    chat_online: "● ஆன்லைன் · சுகாதார AI உதவியாளர்",
+    chat_placeholder: "தீர்வுகள், உணவு, வாழ்க்கை முறை பற்றி கேளுங்கள்…",
+    wa_greeting: "வணக்கம் AAROGYA AI குழு,\n\nநான் ஒரு சந்திப்பை பதிவு செய்ய விரும்புகிறேன்.\n\nபெயர்: {name}\nநிலை: {disease}{risk}\n\nகிடைக்கும் நேரங்களை தெரியப்படுத்தவும். நன்றி!",
+    btn_book_wa: "📲 WhatsApp இல் சந்திப்பை பதிவு செய்யுங்கள்",
+    qr_heart: "இதய தீர்வுகள்", qr_diabetes: "நீரிழிவு தீர்வுகள்", qr_liver: "கல்லீரல் தீர்வுகள்",
+    qr_kidney: "சிறுநீரக தீர்வுகள்", qr_pcos: "பிசிஓஎஸ் தீர்வுகள்", qr_thyroid: "தைராய்டு தீர்வுகள்",
+    qr_breast: "மார்பக தீர்வுகள்", qr_prostate: "புரோஸ்டேட் தீர்வுகள்", qr_lung: "நுரையீரல் தீர்வுகள்",
+    qr_book: "சந்திப்பை பதிவு செய்யுங்கள்", qr_diet: "உணவு குறிப்புகள்", qr_exercise: "உடற்பயிற்சி குறிப்புகள்", qr_severe: "தீவிர அறிகுறிகள்",
+    label_diet: "உணவு வழிகாட்டி", label_exercise: "உடற்பயிற்சி திட்டம்",
+    label_warning: "எச்சரிக்கை அறிகுறிகள் — உடனே மருத்துவரை சந்திக்கவும்",
+    label_remedies: "தீர்வுகள் மற்றும் மேலாண்மை",
+    label_high_risk: "உங்கள் ஆபத்து அதிகமாக உள்ளது. விரைவில் மருத்துவரை அணுகவும்.",
+    chat_fallback: "இதயம், நீரிழிவு, கல்லீரல், சிறுநீரகம், தைராய்டு, பிசிஓஎஸ், மார்பகம், புரோஸ்டேட், நுரையீரல் — என்று தட்டச்சு செய்யுங்கள் அல்லது பொத்தான்களை அழுத்துங்கள்!",
+    no_symptoms: "அறிகுறிகள் எதுவும் இல்லை", based_on: "உங்கள் தகவல்களின் அடிப்படையில்",
+    lbl_low: "குறைவு", lbl_moderate: "மிதமான", lbl_high: "அதிக", lbl_critical: "தீவிர",
+    lbl_overall_risk: "ஒட்டுமொத்த அபாயம்", lbl_male: "ஆண்", lbl_female: "பெண்",
+    lbl_per_disease: "நோய்-வாரியான அபாய விவரம்", lbl_generated: "உருவாக்கப்பட்டது",
+    lbl_report_sub: "மேம்பட்ட நோய் அபாய தளம்  |  சுகாதார அபாய அறிக்கை",
+    lbl_composite: "மதிப்பீடு செய்யப்பட்ட அனைத்து நோய் வகைகளின் கூட்டு மதிப்பெண்",
+    lbl_pdf_inputs: "அறிவிக்கப்பட்ட தகவல்களின் அடிப்படையில்",
+    lbl_disclaimer_title: "மருத்துவ மறுப்பு",
+    lbl_disclaimer: "இந்த அறிக்கை தகவல் மற்றும் கல்வி நோக்கங்களுக்கு மட்டுமே. இது மருத்துவ ஆலோசனை, நோய் கண்டறிதல் அல்லது சிகிச்சை அல்ல. அபாய மதிப்பெண்கள் சுயமாக அறிவிக்கப்பட்ட அறிகுறிகளை அடிப்படையாகக் கொண்டவை.",
+    lbl_footer: "AAROGYA AI  |  மேம்பட்ட நோய் அபாய தளம்",
+    lbl_footer2: "இந்த ஆவணம் தானாக உருவாக்கப்பட்டது. மருத்துவ பயன்பாட்டிற்கு உரிமம் பெற்ற மருத்துவரால் சரிபார்க்கப்பட வேண்டும்.",
+    lbl_report_gen: "அறிக்கை உருவாக்கப்பட்டது",
+  }
+};
+
+// ---- REMEDY TRANSLATIONS ----
+var REMEDY_TRANSLATIONS = {
+  en: {
+    heart: { icon:'❤️', name:'Heart Disease',
+      remedies:'• <strong>Mediterranean diet</strong> — olive oil, fish, leafy greens, nuts<br>• Walk or cycle <strong>30 min daily</strong><br>• Quit smoking & limit alcohol<br>• Reduce salt to manage blood pressure<br>• Practice meditation to lower stress',
+      diet:'• <strong>Eat:</strong> Oats, berries, avocado, walnuts, flaxseeds, garlic, tomatoes<br>• <strong>Avoid:</strong> Trans fats, fried foods, excess salt, processed snacks',
+      exercise:'• Brisk walking, swimming, cycling — 30 min, 5 days/week<br>• Light resistance training 2x/week<br>• Always warm up before exercise',
+      severe:'• Sudden chest pain or tightness<br>• Pain in arm, jaw or neck<br>• Shortness of breath at rest<br>• Irregular heartbeat or fainting',
+      quick:['Heart Remedies','Heart Diet','Heart Exercise','Severe Signs','Book Appointment'] },
+    diabetes: { icon:'🩸', name:'Diabetes',
+      remedies:'• <strong>Low-GI diet</strong> — brown rice, whole wheat, lentils<br>• Exercise <strong>30 min daily</strong> — improves insulin sensitivity<br>• Monitor blood sugar regularly<br>• Stay hydrated — 8–10 glasses daily<br>• Manage weight — 5% loss reduces risk significantly',
+      diet:'• <strong>Eat:</strong> Fenugreek, bitter gourd, amla, cinnamon, legumes<br>• <strong>Avoid:</strong> White rice, refined flour, sugary drinks, sweets',
+      exercise:'• Brisk walking or yoga <strong>30–45 min daily</strong><br>• Resistance training 2–3x/week<br>• Post-meal walks lower blood sugar spikes',
+      severe:'• Blood sugar >300 mg/dL consistently<br>• Fruity breath (diabetic ketoacidosis)<br>• Foot wounds that do not heal<br>• Blurred vision or limb numbness',
+      quick:['Diabetes Remedies','Diabetes Diet','Diabetes Exercise','Severe Signs','Book Appointment'] },
+    liver: { icon:'🟤', name:'Liver Disease',
+      remedies:'• <strong>Zero alcohol</strong> — even small amounts worsen inflammation<br>• Warm lemon water every morning<br>• Turmeric daily — proven hepatoprotective<br>• Maintain healthy weight<br>• Avoid self-medication and unnecessary drugs',
+      diet:'• <strong>Eat:</strong> Leafy greens, garlic, beets, green tea, olive oil, walnuts<br>• <strong>Avoid:</strong> Alcohol, fried foods, processed meats, refined sugar',
+      exercise:'• Walking, yoga, swimming — 30 min, 5x/week<br>• Gradual weight loss highly beneficial<br>• Avoid heavy exercise during active inflammation',
+      severe:'• Yellowing of skin or eyes (jaundice)<br>• Severe abdominal pain or swelling<br>• Very dark urine or pale stools<br>• Blood in vomit or stools',
+      quick:['Liver Remedies','Liver Diet','Liver Exercise','Severe Signs','Book Appointment'] },
+    kidney: { icon:'🫘', name:'Kidney Disease',
+      remedies:'• Drink <strong>2.5–3 litres of water daily</strong><br>• Control blood pressure (<130/80)<br>• Avoid NSAIDs (ibuprofen, naproxen)<br>• Cranberry juice helps prevent UTIs<br>• Reduce protein if creatinine is elevated',
+      diet:'• <strong>Eat:</strong> Cauliflower, cabbage, apple, red grapes, egg whites, blueberries<br>• <strong>Avoid:</strong> Excess salt, high-potassium foods, phosphorus if CKD',
+      exercise:'• Walking, cycling 30 min, 5x/week<br>• Avoid heavy weightlifting<br>• Yoga improves kidney circulation',
+      severe:'• Swelling of hands, feet, face<br>• Decrease in urine output<br>• Frothy or blood-tinged urine<br>• Severe lower back or flank pain',
+      quick:['Kidney Remedies','Kidney Diet','Kidney Exercise','Severe Signs','Book Appointment'] },
+    breast: { icon:'🎗️', name:'Breast Cancer',
+      remedies:'• Maintain <strong>healthy BMI</strong><br>• Monthly self-breast exams<br>• Limit alcohol; avoid smoking<br>• Breastfeeding lowers risk<br>• Ensure adequate Vitamin D',
+      diet:'• <strong>Eat:</strong> Broccoli, berries, flaxseeds, turmeric, green tea, pomegranate<br>• <strong>Avoid:</strong> Processed meats, alcohol, high-fat dairy, refined sugars',
+      exercise:'• 150–300 min/week moderate aerobic activity<br>• Strength training 2x/week<br>• Exercise reduces breast cancer risk by 20–40%',
+      severe:'• New lump in breast or underarm<br>• Nipple discharge (especially bloody)<br>• Nipple inversion or skin changes<br>• Persistent breast pain in one area',
+      quick:['Breast Remedies','Breast Diet','Breast Exercise','Warning Signs','Book Appointment'] },
+    thyroid: { icon:'🦋', name:'Thyroid Disease',
+      remedies:'• <strong>Selenium-rich foods</strong> — Brazil nuts, tuna<br>• Adequate iodine — iodised salt, seaweed<br>• Manage stress — cortisol disrupts thyroid<br>• Avoid excessive raw cruciferous vegetables<br>• TSH test every 6 months if family history',
+      diet:'• <strong>Eat:</strong> Seaweed, fish, eggs, Brazil nuts, pumpkin seeds, legumes<br>• <strong>Avoid:</strong> Excessive soy, gluten (Hashimoto\'s), fluoridated water',
+      exercise:'• Yoga (shoulder stand, fish pose) stimulates thyroid<br>• Walking 30 min daily improves metabolism<br>• Strength training counters weight gain from hypothyroidism',
+      severe:'• Racing heart (hyperthyroid)<br>• Rapid unexplained weight change<br>• Visible thyroid swelling/goiter<br>• Severe depression or brain fog',
+      quick:['Thyroid Remedies','Thyroid Diet','Thyroid Exercise','Severe Signs','Book Appointment'] },
+    pcos: { icon:'🌸', name:'PCOS',
+      remedies:'• <strong>Low-GI diet</strong> — stabilises insulin driving PCOS<br>• Exercise <strong>150 min/week</strong> — lowers androgens<br>• Spearmint tea reduces testosterone naturally<br>• Manage stress — cortisol worsens PCOS<br>• 5–10% weight loss restores ovulation',
+      diet:'• <strong>Eat:</strong> Whole grains, legumes, leafy greens, berries, flaxseeds, cinnamon<br>• <strong>Avoid:</strong> Refined carbs, white sugar, excess dairy, caffeine',
+      exercise:'• HIIT 3x/week — best for insulin sensitivity<br>• Yoga reduces cortisol and balances hormones<br>• Avoid extreme cardio — raises cortisol',
+      severe:'• Periods absent for 3+ months<br>• Severe pelvic pain<br>• Excessive hair growth on face/body<br>• Infertility after 12 months of trying',
+      quick:['PCOS Remedies','PCOS Diet','PCOS Exercise','Severe Signs','Book Appointment'] },
+    prostate: { icon:'🔵', name:'Prostate Cancer',
+      remedies:'• <strong>Lycopene-rich foods</strong> — cooked tomatoes, watermelon<br>• Regular PSA screening after age 40<br>• Green tea 3–4 cups/day (EGCG is anti-cancer)<br>• Maintain healthy weight<br>• Limit red meat and high-fat dairy',
+      diet:'• <strong>Eat:</strong> Cooked tomatoes, pomegranate juice, green tea, broccoli, fish, turmeric<br>• <strong>Avoid:</strong> Red/processed meat, high-fat dairy, saturated fats',
+      exercise:'• 30 min brisk walking or swimming daily<br>• Strength training 2–3x/week<br>• Kegel exercises maintain urinary control',
+      severe:'• Difficulty starting/stopping urination<br>• Blood in urine or semen<br>• Bone pain (hip/back) — possible spread<br>• Unexplained weight loss',
+      quick:['Prostate Remedies','Prostate Diet','Prostate Exercise','Severe Signs','Book Appointment'] },
+    lung: { icon:'🫁', name:'Lung Disease',
+      remedies:'• <strong>Quit smoking immediately</strong> — lungs recover in 2 weeks<br>• Deep breathing (pranayama) 10 min daily<br>• Avoid pollution, dust, chemical fumes<br>• Steam with eucalyptus oil loosens mucus<br>• Tulsi tea has bronchodilator properties',
+      diet:'• <strong>Eat:</strong> Apples, tomatoes, ginger, turmeric, garlic, omega-3 rich fish<br>• <strong>Avoid:</strong> Processed meats, excess dairy, smoking/alcohol',
+      exercise:'• Pursed-lip breathing — inhale 2 sec, exhale 4 sec<br>• Walking or swimming — gentlest on lungs<br>• Avoid outdoor exercise in high pollution',
+      severe:'• Sudden severe shortness of breath at rest<br>• Blue-tinted lips or fingernails<br>• Coughing up blood<br>• SpO2 below 94% consistently',
+      quick:['Lung Remedies','Lung Diet','Lung Exercise','Severe Signs','Book Appointment'] }
+  },
+  hi: {
+    heart: { icon:'❤️', name:'हृदय रोग',
+      remedies:'• <strong>भूमध्यसागरीय आहार</strong> — जैतून का तेल, मछली, पत्तेदार सब्जियां, मेवे<br>• <strong>रोज 30 मिनट</strong> चलना या साइकिल चलाना<br>• धूम्रपान छोड़ें और शराब कम करें<br>• नमक कम खाएं ताकि ब्लड प्रेशर नियंत्रित रहे<br>• ध्यान करने से तनाव कम होता है',
+      diet:'• <strong>खाएं:</strong> जई, जामुन, एवोकाडो, अखरोट, अलसी, लहसुन, टमाटर<br>• <strong>बचें:</strong> ट्रांस फैट, तले हुए खाने, अधिक नमक, प्रोसेस्ड स्नैक्स',
+      exercise:'• तेज चलना, तैराकी, साइकिल — 30 मिनट, सप्ताह में 5 दिन<br>• हल्का वजन उठाना सप्ताह में 2 बार<br>• व्यायाम से पहले वार्म अप जरूर करें',
+      severe:'• अचानक सीने में दर्द या जकड़न<br>• बांह, जबड़े या गर्दन में दर्द<br>• आराम करते समय सांस लेने में तकलीफ<br>• दिल की अनियमित धड़कन या बेहोशी',
+      quick:['हृदय उपाय','हृदय आहार','हृदय व्यायाम','गंभीर संकेत','अपॉइंटमेंट बुक करें'] },
+    diabetes: { icon:'🩸', name:'मधुमेह',
+      remedies:'• <strong>कम GI आहार</strong> — ब्राउन राइस, साबुत गेहूं, दाल<br>• <strong>रोज 30 मिनट</strong> व्यायाम — इंसुलिन संवेदनशीलता बढ़ाता है<br>• नियमित रूप से ब्लड शुगर जांचें<br>• रोज 8–10 गिलास पानी पिएं<br>• वजन 5% कम करने से जोखिम काफी घट जाता है',
+      diet:'• <strong>खाएं:</strong> मेथी, करेला, आंवला, दालचीनी, फलियां<br>• <strong>बचें:</strong> सफेद चावल, मैदा, मीठे पेय, मिठाई',
+      exercise:'• तेज चलना या योग — रोज 30–45 मिनट<br>• वजन प्रशिक्षण सप्ताह में 2–3 बार<br>• खाने के बाद 10–15 मिनट चलने से ब्लड शुगर कम होती है',
+      severe:'• ब्लड शुगर लगातार 300 mg/dL से अधिक<br>• सांस में फल जैसी गंध (डायबिटिक कीटोएसिडोसिस)<br>• पैर के घाव जो ठीक नहीं होते<br>• धुंधली दृष्टि या अंगों में सुन्नपन',
+      quick:['मधुमेह उपाय','मधुमेह आहार','मधुमेह व्यायाम','गंभीर संकेत','अपॉइंटमेंट बुक करें'] },
+    liver: { icon:'🟤', name:'यकृत रोग',
+      remedies:'• <strong>शराब बिल्कुल नहीं</strong> — थोड़ी भी यकृत को नुकसान पहुंचाती है<br>• सुबह गर्म नींबू पानी पिएं<br>• रोज हल्दी खाएं — यकृत की रक्षा करती है<br>• स्वस्थ वजन बनाए रखें<br>• बिना डॉक्टर की सलाह के दवाएं न लें',
+      diet:'• <strong>खाएं:</strong> पत्तेदार सब्जियां, लहसुन, चुकंदर, हरी चाय, जैतून का तेल<br>• <strong>बचें:</strong> शराब, तला हुआ खाना, प्रोसेस्ड मीट, चीनी',
+      exercise:'• चलना, योग, तैराकी — 30 मिनट, सप्ताह में 5 बार<br>• धीरे-धीरे वजन घटाना बहुत फायदेमंद<br>• सूजन होने पर भारी व्यायाम से बचें',
+      severe:'• त्वचा या आंखों का पीला पड़ना (पीलिया)<br>• पेट में तेज दर्द या सूजन<br>• बहुत गहरे रंग का मूत्र या हल्के रंग का मल<br>• उल्टी या मल में खून',
+      quick:['यकृत उपाय','यकृत आहार','यकृत व्यायाम','गंभीर संकेत','अपॉइंटमेंट बुक करें'] },
+    kidney: { icon:'🫘', name:'गुर्दे की बीमारी',
+      remedies:'• <strong>रोज 2.5–3 लीटर पानी</strong> पिएं<br>• ब्लड प्रेशर को 130/80 से कम रखें<br>• NSAIDs (ibuprofen) लेने से बचें<br>• क्रैनबेरी जूस मूत्र पथ के संक्रमण को रोकता है<br>• क्रिएटिनिन अधिक हो तो प्रोटीन कम करें',
+      diet:'• <strong>खाएं:</strong> फूलगोभी, पत्तागोभी, सेब, लाल अंगूर, अंडे की सफेदी<br>• <strong>बचें:</strong> अधिक नमक, उच्च पोटेशियम खाद्य पदार्थ',
+      exercise:'• चलना, साइकिल चलाना — 30 मिनट, सप्ताह में 5 बार<br>• भारी वजन उठाने से बचें<br>• योग गुर्दे में रक्त संचार बढ़ाता है',
+      severe:'• हाथ, पैर, चेहरे में अचानक सूजन<br>• मूत्र की मात्रा में अचानक कमी<br>• झागदार या खून मिला मूत्र<br>• पीठ या बाजू में तेज दर्द',
+      quick:['गुर्दा उपाय','गुर्दा आहार','गुर्दा व्यायाम','गंभीर संकेत','अपॉइंटमेंट बुक करें'] },
+    breast: { icon:'🎗️', name:'स्तन कैंसर',
+      remedies:'• <strong>स्वस्थ BMI</strong> बनाए रखें<br>• मासिक स्व-स्तन परीक्षण करें<br>• शराब सीमित करें; धूम्रपान बंद करें<br>• स्तनपान से जोखिम कम होता है<br>• पर्याप्त विटामिन D सुनिश्चित करें',
+      diet:'• <strong>खाएं:</strong> ब्रोकोली, जामुन, अलसी, हल्दी, हरी चाय, अनार<br>• <strong>बचें:</strong> प्रोसेस्ड मीट, शराब, उच्च वसा डेयरी',
+      exercise:'• सप्ताह में 150–300 मिनट मध्यम एरोबिक गतिविधि<br>• वजन प्रशिक्षण सप्ताह में 2 बार<br>• व्यायाम से स्तन कैंसर का खतरा 20–40% कम होता है',
+      severe:'• स्तन या कांख में नई गांठ<br>• निप्पल से स्राव (विशेषकर खून)<br>• निप्पल अंदर धंसना<br>• एक जगह लगातार स्तन दर्द',
+      quick:['स्तन उपाय','स्तन आहार','स्तन व्यायाम','चेतावनी के संकेत','अपॉइंटमेंट बुक करें'] },
+    thyroid: { icon:'🦋', name:'थायरॉइड रोग',
+      remedies:'• <strong>सेलेनियम युक्त खाद्य पदार्थ</strong> — ब्राजील नट्स, टूना<br>• पर्याप्त आयोडीन — आयोडीन युक्त नमक, समुद्री शैवाल<br>• तनाव प्रबंधन — कोर्टिसोल थायरॉइड को बाधित करता है<br>• कच्ची क्रूसिफेरस सब्जियां अधिक न खाएं<br>• हर 6 महीने में TSH जांच कराएं',
+      diet:'• <strong>खाएं:</strong> समुद्री शैवाल, मछली, अंडे, ब्राजील नट्स, कद्दू के बीज<br>• <strong>बचें:</strong> अधिक सोया, ग्लूटेन (हाशिमोटो में), फ्लोराइड युक्त पानी',
+      exercise:'• योग (शोल्डर स्टैंड, फिश पोज) थायरॉइड को उत्तेजित करता है<br>• रोज 30 मिनट चलना मेटाबॉलिज्म सुधारता है<br>• वजन प्रशिक्षण हाइपोथायरॉइड में वजन बढ़ने से रोकता है',
+      severe:'• तेज धड़कन (हाइपरथायरॉइड)<br>• अचानक वजन में बड़ा बदलाव<br>• गर्दन में सूजन / गोइटर<br>• गंभीर अवसाद या मानसिक धुंध',
+      quick:['थायरॉइड उपाय','थायरॉइड आहार','थायरॉइड व्यायाम','गंभीर संकेत','अपॉइंटमेंट बुक करें'] },
+    pcos: { icon:'🌸', name:'पीसीओएस',
+      remedies:'• <strong>कम GI आहार</strong> — इंसुलिन को स्थिर करता है जो PCOS को बढ़ाता है<br>• सप्ताह में <strong>150 मिनट व्यायाम</strong> — एंड्रोजन कम करता है<br>• पुदीना चाय स्वाभाविक रूप से टेस्टोस्टेरोन कम करती है<br>• तनाव प्रबंधन — कोर्टिसोल PCOS को बिगाड़ता है<br>• 5–10% वजन कम करने से ओव्यूलेशन ठीक होता है',
+      diet:'• <strong>खाएं:</strong> साबुत अनाज, फलियां, पत्तेदार सब्जियां, जामुन, दालचीनी<br>• <strong>बचें:</strong> रिफाइंड कार्ब्स, चीनी, अधिक डेयरी',
+      exercise:'• HIIT सप्ताह में 3 बार — इंसुलिन संवेदनशीलता के लिए सर्वोत्तम<br>• योग कोर्टिसोल कम करता है और हार्मोन संतुलित करता है<br>• अत्यधिक कार्डियो से बचें',
+      severe:'• 3+ महीने से मासिक धर्म नहीं<br>• गंभीर पेल्विक दर्द<br>• चेहरे/शरीर पर अत्यधिक बाल उगना<br>• 12 महीने कोशिश के बाद भी गर्भधारण न होना',
+      quick:['पीसीओएस उपाय','पीसीओएस आहार','पीसीओएस व्यायाम','गंभीर संकेत','अपॉइंटमेंट बुक करें'] },
+    prostate: { icon:'🔵', name:'प्रोस्टेट कैंसर',
+      remedies:'• <strong>लाइकोपीन युक्त खाद्य पदार्थ</strong> — पके टमाटर, तरबूज<br>• 40 वर्ष के बाद नियमित PSA स्क्रीनिंग<br>• हरी चाय 3–4 कप/दिन (EGCG कैंसर विरोधी)<br>• स्वस्थ वजन बनाए रखें<br>• लाल मांस और उच्च वसा डेयरी सीमित करें',
+      diet:'• <strong>खाएं:</strong> पके टमाटर, अनार का रस, हरी चाय, ब्रोकोली, मछली, हल्दी<br>• <strong>बचें:</strong> लाल/प्रोसेस्ड मांस, संतृप्त वसा',
+      exercise:'• रोज 30 मिनट तेज चलना या तैराकी<br>• वजन प्रशिक्षण सप्ताह में 2–3 बार<br>• केगेल व्यायाम मूत्र नियंत्रण बनाए रखता है',
+      severe:'• पेशाब शुरू/रोकने में कठिनाई<br>• मूत्र या वीर्य में खून<br>• हड्डी में दर्द — संभावित फैलाव<br>• अचानक वजन कम होना',
+      quick:['प्रोस्टेट उपाय','प्रोस्टेट आहार','प्रोस्टेट व्यायाम','गंभीर संकेत','अपॉइंटमेंट बुक करें'] },
+    lung: { icon:'🫁', name:'फेफड़े की बीमारी',
+      remedies:'• <strong>तुरंत धूम्रपान छोड़ें</strong> — 2 सप्ताह में फेफड़े ठीक होने लगते हैं<br>• रोज 10 मिनट प्राणायाम<br>• प्रदूषण, धूल, रासायनिक धुएं से बचें<br>• नीलगिरी तेल वाली भाप से बलगम ढीला होता है<br>• तुलसी चाय में ब्रोंकोडायलेटर गुण हैं',
+      diet:'• <strong>खाएं:</strong> सेब, टमाटर, अदरक, हल्दी, लहसुन, ओमेगा-3 युक्त मछली<br>• <strong>बचें:</strong> प्रोसेस्ड मीट, अधिक डेयरी, धूम्रपान/शराब',
+      exercise:'• होंठ सिकोड़ कर सांस — 2 सेकंड सांस लें, 4 सेकंड छोड़ें<br>• चलना या तैराकी — फेफड़ों के लिए सबसे सौम्य<br>• अधिक प्रदूषण में बाहर व्यायाम न करें',
+      severe:'• अचानक आराम करते समय सांस लेने में तकलीफ<br>• होंठ या नाखून नीले पड़ना<br>• खून की खांसी<br>• SpO2 लगातार 94% से नीचे',
+      quick:['फेफड़ा उपाय','फेफड़ा आहार','फेफड़ा व्यायाम','गंभीर संकेत','अपॉइंटमेंट बुक करें'] }
+  }
+};
+
+// Clone English remedies for kn/te/ta (names translated, content in English for accuracy)
+// Add localized names + deep local language remedies for Kannada, Telugu, Tamil
+REMEDY_TRANSLATIONS.kn = JSON.parse(JSON.stringify(REMEDY_TRANSLATIONS.en));
+REMEDY_TRANSLATIONS.te = JSON.parse(JSON.stringify(REMEDY_TRANSLATIONS.en));
+REMEDY_TRANSLATIONS.ta = JSON.parse(JSON.stringify(REMEDY_TRANSLATIONS.en));
+
+// Update disease names for Kannada
+var knNames = {heart:'ಹೃದ್ರೋಗ',diabetes:'ಮಧುಮೇಹ',liver:'ಯಕೃತ್ತಿನ ರೋಗ',kidney:'ಮೂತ್ರಪಿಂಡ ರೋಗ',breast:'ಸ್ತನ ಕ್ಯಾನ್ಸರ್',thyroid:'ಥೈರಾಯ್ಡ್ ರೋಗ',pcos:'ಪಿಸಿಒಎಸ್',prostate:'ಪ್ರಾಸ್ಟೇಟ್ ಕ್ಯಾನ್ಸರ್',lung:'ಶ್ವಾಸಕೋಶ ರೋಗ'};
+var teNames = {heart:'హృదయ వ్యాధి',diabetes:'మధుమేహం',liver:'కాలేయ వ్యాధి',kidney:'మూత్రపిండ వ్యాధి',breast:'స్తన క్యాన్సర్',thyroid:'థైరాయిడ్ వ్యాధి',pcos:'పిసిఓఎస్',prostate:'ప్రోస్టేట్ క్యాన్సర్',lung:'ఊపిరితిత్తుల వ్యాధి'};
+var taNames = {heart:'இதய நோய்',diabetes:'நீரிழிவு நோய்',liver:'கல்லீரல் நோய்',kidney:'சிறுநீரக நோய்',breast:'மார்பக புற்றுநோய்',thyroid:'தைராய்டு நோய்',pcos:'பிசிஓஎஸ்',prostate:'புரோஸ்டேட் புற்றுநோய்',lung:'நுரையீரல் நோய்'};
+var hiNames = {heart:'हृदय रोग',diabetes:'मधुमेह',liver:'यकृत रोग',kidney:'गुर्दे की बीमारी',breast:'स्तन कैंसर',thyroid:'थायरॉइड रोग',pcos:'पीसीओएस',prostate:'प्रोस्टेट कैंसर',lung:'फेफड़े की बीमारी'};
+REMEDY_TRANSLATIONS.hi = JSON.parse(JSON.stringify(REMEDY_TRANSLATIONS.en));
+Object.keys(knNames).forEach(function(k){ REMEDY_TRANSLATIONS.kn[k].name = knNames[k]; });
+Object.keys(teNames).forEach(function(k){ REMEDY_TRANSLATIONS.te[k].name = teNames[k]; });
+Object.keys(taNames).forEach(function(k){ REMEDY_TRANSLATIONS.ta[k].name = taNames[k]; });
+Object.keys(hiNames).forEach(function(k){ REMEDY_TRANSLATIONS.hi[k].name = hiNames[k]; });
+
+// Helper: get localized disease name for a given English name
+function getLocalDiseaseName(englishName){
+  var lang = CURRENT_LANG || 'en';
+  var rems = REMEDY_TRANSLATIONS[lang] || REMEDY_TRANSLATIONS.en;
+  for(var k in rems){
+    if(rems[k] && REMEDY_TRANSLATIONS.en[k] && REMEDY_TRANSLATIONS.en[k].name.toLowerCase() === englishName.toLowerCase()){
+      return rems[k].name;
+    }
+  }
+  return englishName;
+}
+
+// ---- CORE i18n FUNCTION ----
+function t(key){ return (TRANSLATIONS[CURRENT_LANG] && TRANSLATIONS[CURRENT_LANG][key]) || TRANSLATIONS.en[key] || key; }
+
+// ---- GET REMEDIES IN CURRENT LANG ----
+function getRemedies(key){
+  if(REMEDY_TRANSLATIONS[CURRENT_LANG] && REMEDY_TRANSLATIONS[CURRENT_LANG][key]) return REMEDY_TRANSLATIONS[CURRENT_LANG][key];
+  return REMEDY_TRANSLATIONS.en[key];
+}
+
+
+// ── FULL UI TRANSLATIONS (all 5 languages) ──
+var UI_DICT = {
+ en:{
+  s3_title:"Symptoms & History", s3_sub:"Select each tab and honestly report your symptoms",
+  gender_f_sub:"PCOS · Breast · Hormonal", gender_m_sub:"Prostate · Heart · Liver",
+  tab_lifestyle:"Lifestyle", tab_heart:"Heart", tab_diabetes:"Diabetes", tab_liver:"Liver",
+  tab_kidney:"Kidney", tab_hormonal:"Hormonal", tab_breast:"Breast", tab_prostate:"Prostate", tab_thyroid:"Thyroid",
+  sub_substances:"Substances", sub_activity:"Activity & Diet", sub_mental:"Mental & Sleep",
+  sub_bp_chol:"Blood Pressure & Cholesterol", sub_chest:"Chest & Heart Symptoms", sub_exertion:"Exertion Symptoms",
+  sub_blood_sugar:"Blood Sugar Symptoms", sub_diab_other:"Other Diabetes Signs",
+  sub_liver_sym:"Liver Symptoms", sub_digestive:"Digestive",
+  sub_urinary:"Urinary Symptoms", sub_back_swell:"Back & Swelling",
+  sub_menstrual:"Menstrual Health", sub_pcos_signs:"PCOS Signs",
+  sub_breast_sym:"Breast Symptoms", sub_breast_risk:"Breast Risk Factors",
+  sub_prostate:"Urinary / Prostate Symptoms", sub_pain:"Pain",
+  sub_thyroid_sym:"Thyroid Symptoms", sub_risk_factors:"Risk Factors",
+  lbl_hypert:"Diagnosed Hypertension?", lbl_diag_diab:"Diagnosed Diabetes?",
+  lbl_smoking:"Smoking", lbl_alcohol:"Alcohol", lbl_activity:"Physical activity", lbl_diet_quality:"Diet quality",
+  lbl_stress:"Stress level", lbl_sleep:"Sleep (hrs/night)", lbl_family_hx:"Family history of major disease",
+  lbl_bp_level:"Blood pressure level", lbl_cholesterol:"Cholesterol (self-assessed)",
+  lbl_chest_pain:"Chest pain / discomfort", lbl_chest_tight:"Chest tightness / pressure",
+  lbl_palpitations:"Heart palpitations", lbl_irreg_hb:"Irregular heartbeat",
+  lbl_breathless:"Shortness of breath", lbl_exercise_cp:"Chest pain during exercise", lbl_swelling:"Leg / ankle swelling",
+  lbl_sugar:"Blood sugar (self-assessed)", lbl_freq_urine:"Frequent / excessive urination", lbl_thirst:"Excessive thirst",
+  lbl_blur_vis:"Blurred vision", lbl_slow_heal:"Slow healing wounds", lbl_tingling:"Tingling / numbness hands or feet", lbl_fatigue:"Fatigue / low energy",
+  lbl_jaundice:"Jaundice (yellow skin / eyes)", lbl_dark_urine:"Dark urine (tea-coloured)", lbl_pale_stool:"Pale / clay-coloured stool",
+  lbl_itching:"Itchy skin (whole body)", lbl_abdominal:"Abdominal pain / bloating", lbl_liver_tender:"Right upper abdomen tenderness",
+  lbl_nausea:"Nausea / vomiting", lbl_wtloss:"Unexplained weight loss",
+  lbl_urine_less:"Reduced urine output", lbl_urine_blood:"Blood in urine", lbl_urine_foam:"Foamy / frothy urine",
+  lbl_back_pain:"Lower back / flank pain", lbl_puffiness:"Puffiness around eyes / face", lbl_leg_cramps:"Leg cramps",
+  lbl_cycle:"Menstrual cycle regularity", lbl_heavy_period:"Heavy or prolonged periods",
+  lbl_facial_hair:"Excess facial / body hair", lbl_dark_skin:"Skin darkening (neck / armpits)",
+  lbl_acne:"Acne / cystic breakouts", lbl_wtgain:"Unexplained weight gain",
+  lbl_breast_lump:"Breast lump or thickening", lbl_breast_pain:"Breast pain / tenderness",
+  lbl_nipple_disc:"Nipple discharge (non-milk)", lbl_breast_skin:"Skin changes on breast (dimpling)", lbl_breast_fam:"Family history of breast cancer",
+  lbl_urin_diff:"Difficulty urinating / weak stream", lbl_nocturia:"Waking at night to urinate",
+  lbl_blood_semen:"Blood in semen", lbl_pelvic_pain:"Pelvic / lower back pain", lbl_erectile:"Erectile dysfunction",
+  lbl_thyroid_swell:"Neck / thyroid swelling or lump", lbl_cold_intol:"Always feeling cold",
+  lbl_heat_intol:"Excessive sweating / heat intolerance", lbl_voice_chg:"Voice hoarseness",
+  lbl_radiation:"Previous radiation to neck", lbl_hairloss:"Hair thinning / loss",
+  btn_pdf:"Download PDF Report",
+  // select options
+  sel_yn:["No","Yes"],
+  sel_yn_diag:["No — not diagnosed","Yes — diagnosed"],
+  sel_yn_prediab:["No — not diagnosed","Yes / Pre-diabetic"],
+  sel_yn_none:["None","Yes"],
+  sel_yn_normal:["No — normal","Yes"],
+  sel_yn_felt:["No","Yes — felt or detected"],
+  sel_yn_nochanges:["No changes","Yes"],
+  sel_yn_relative:["No","Yes — close relative"],
+  sel_yn_visible:["No","Yes — visible / palpable"],
+  sel_yn_morning:["No","Yes — morning puffiness"],
+  sel_yn_frequent:["No","Yes — frequent"],
+  sel_smoking:["Never smoked","Current / ex-smoker"],
+  sel_alcohol:["None","Occasional","Regular weekly","Daily / heavy"],
+  sel_activity:["Very active","Active 3-4x/week","Light 1-2x/week","Sedentary"],
+  sel_diet:["Balanced & healthy","Mostly home cooked","Frequent fast food","Very unhealthy"],
+  sel_stress:["Low","Mild","Moderate","High / chronic"],
+  sel_sleep:["8+","7","6","5","4 or less"],
+  sel_family_hx:["None known","One close relative","Both parents / multiple"],
+  sel_bp_level:["Normal (below 120/80)","Elevated (120-129)","High Stage 1 (130-139)","High Stage 2 (140+)"],
+  sel_chol:["Normal (below 200)","Borderline (200-239)","High (240-279)","Very high (280+)"],
+  sel_chest_pain:["None","Mild / atypical","Typical angina","Severe / crushing"],
+  sel_freq3:["None","Occasional","Frequent"],
+  sel_breathless:["None","Heavy exertion only","Moderate exertion","At rest"],
+  sel_exercise_cp:["No","Mild","Frequent","Always stops me"],
+  sel_severity4:["None","Mild","Moderate","Severe"],
+  sel_severity3:["No","Mild","Significant"],
+  sel_sugar:["Normal (below 100 fasting)","Slightly high (100-125)","Pre-diabetic range","Very high (200+)"],
+  sel_freq_urine:["Normal","Somewhat increased","Significantly increased"],
+  sel_thirst:["Normal","Somewhat thirsty","Constantly thirsty"],
+  sel_slow_heal:["No — heals normally","Yes — unusually slow"],
+  sel_jaundice:["None","Mild yellowing","Moderate","Obvious"],
+  sel_urine_less:["Normal","Slightly reduced","Noticeably less","Very little"],
+  sel_urine_blood:["No","Trace","Often / visible"],
+  sel_urine_foam:["No","Sometimes","Frequently"],
+  sel_back_pain:["None","Mild","Persistent / severe"],
+  sel_cycle:["Regular (28-35 days)","Slightly irregular","Very irregular","Absent"],
+  sel_heavy_period:["Normal flow","Heavy","Very heavy / prolonged"],
+  sel_acne:["None","Mild","Moderate / cystic","Severe"],
+  sel_breast_pain:["None","Mild / cyclical","Persistent / severe"],
+  sel_urin_diff:["None — normal","Mild hesitancy","Moderate difficulty","Severe"],
+  sel_nocturia:["Rarely","1-2x per night","3+ times per night"],
+  sel_erectile:["No issues","Yes — new onset"],
+  sel_hairloss:["None","Noticeable"],
+ },
+ hi:{
+  s3_title:"लक्षण एवं इतिहास", s3_sub:"प्रत्येक टैब चुनें और अपने लक्षण ईमानदारी से बताएं",
+  gender_f_sub:"पीसीओएस · स्तन · हार्मोनल", gender_m_sub:"प्रोस्टेट · हृदय · यकृत",
+  tab_lifestyle:"जीवनशैली", tab_heart:"हृदय", tab_diabetes:"मधुमेह", tab_liver:"यकृत",
+  tab_kidney:"गुर्दा", tab_hormonal:"हार्मोनल", tab_breast:"स्तन", tab_prostate:"प्रोस्टेट", tab_thyroid:"थायरॉइड",
+  sub_substances:"पदार्थ", sub_activity:"गतिविधि एवं आहार", sub_mental:"मानसिक एवं नींद",
+  sub_bp_chol:"रक्तचाप एवं कोलेस्ट्रॉल", sub_chest:"सीने एवं हृदय के लक्षण", sub_exertion:"परिश्रम के लक्षण",
+  sub_blood_sugar:"रक्त शर्करा के लक्षण", sub_diab_other:"मधुमेह के अन्य लक्षण",
+  sub_liver_sym:"यकृत के लक्षण", sub_digestive:"पाचन",
+  sub_urinary:"मूत्र संबंधी लक्षण", sub_back_swell:"पीठ एवं सूजन",
+  sub_menstrual:"मासिक धर्म स्वास्थ्य", sub_pcos_signs:"पीसीओएस के लक्षण",
+  sub_breast_sym:"स्तन के लक्षण", sub_breast_risk:"स्तन जोखिम कारक",
+  sub_prostate:"मूत्र / प्रोस्टेट लक्षण", sub_pain:"दर्द",
+  sub_thyroid_sym:"थायरॉइड के लक्षण", sub_risk_factors:"जोखिम कारक",
+  lbl_hypert:"उच्च रक्तचाप निदान हुआ?", lbl_diag_diab:"मधुमेह निदान हुआ?",
+  lbl_smoking:"धूम्रपान", lbl_alcohol:"शराब", lbl_activity:"शारीरिक गतिविधि", lbl_diet_quality:"आहार गुणवत्ता",
+  lbl_stress:"तनाव स्तर", lbl_sleep:"नींद (घंटे/रात)", lbl_family_hx:"प्रमुख बीमारी का पारिवारिक इतिहास",
+  lbl_bp_level:"रक्तचाप स्तर", lbl_cholesterol:"कोलेस्ट्रॉल (स्वयं-मूल्यांकन)",
+  lbl_chest_pain:"सीने में दर्द / असुविधा", lbl_chest_tight:"सीने में जकड़न / दबाव",
+  lbl_palpitations:"दिल की धड़कन बढ़ना", lbl_irreg_hb:"अनियमित धड़कन",
+  lbl_breathless:"सांस लेने में तकलीफ", lbl_exercise_cp:"व्यायाम के दौरान सीने में दर्द", lbl_swelling:"पैर / टखने में सूजन",
+  lbl_sugar:"रक्त शर्करा (स्वयं-मूल्यांकन)", lbl_freq_urine:"बार-बार / अधिक पेशाब", lbl_thirst:"अत्यधिक प्यास",
+  lbl_blur_vis:"धुंधली दृष्टि", lbl_slow_heal:"घाव देर से ठीक होना", lbl_tingling:"हाथ-पैर में झनझनाहट / सुन्नपन", lbl_fatigue:"थकान / कम ऊर्जा",
+  lbl_jaundice:"पीलिया (त्वचा / आंखें पीली)", lbl_dark_urine:"गहरे रंग का मूत्र (चाय रंग)", lbl_pale_stool:"पीला / मिट्टी रंग का मल",
+  lbl_itching:"पूरे शरीर में खुजली", lbl_abdominal:"पेट दर्द / फूलना", lbl_liver_tender:"दाहिने ऊपरी पेट में दर्द",
+  lbl_nausea:"मतली / उल्टी", lbl_wtloss:"अकारण वजन घटना",
+  lbl_urine_less:"मूत्र कम आना", lbl_urine_blood:"मूत्र में खून", lbl_urine_foam:"झागदार / फेनयुक्त मूत्र",
+  lbl_back_pain:"पीठ के निचले हिस्से / बाजू में दर्द", lbl_puffiness:"आंखों / चेहरे के आसपास सूजन", lbl_leg_cramps:"पैरों में ऐंठन",
+  lbl_cycle:"मासिक चक्र नियमितता", lbl_heavy_period:"भारी या लंबे समय तक मासिक धर्म",
+  lbl_facial_hair:"चेहरे / शरीर पर अधिक बाल", lbl_dark_skin:"त्वचा का काला पड़ना (गर्दन / बगल)",
+  lbl_acne:"मुँहासे / सिस्टिक दाने", lbl_wtgain:"अकारण वजन बढ़ना",
+  lbl_breast_lump:"स्तन में गांठ या मोटाई", lbl_breast_pain:"स्तन में दर्द / संवेदनशीलता",
+  lbl_nipple_disc:"निप्पल से स्राव (दूध नहीं)", lbl_breast_skin:"स्तन की त्वचा में बदलाव (डिम्पलिंग)", lbl_breast_fam:"स्तन कैंसर का पारिवारिक इतिहास",
+  lbl_urin_diff:"पेशाब करने में कठिनाई / कमजोर धार", lbl_nocturia:"रात को पेशाब के लिए उठना",
+  lbl_blood_semen:"वीर्य में खून", lbl_pelvic_pain:"श्रोणि / पीठ के निचले हिस्से में दर्द", lbl_erectile:"स्तंभन दोष",
+  lbl_thyroid_swell:"गर्दन / थायरॉइड में सूजन या गांठ", lbl_cold_intol:"हमेशा ठंड लगना",
+  lbl_heat_intol:"अत्यधिक पसीना / गर्मी असहिष्णुता", lbl_voice_chg:"आवाज में भारीपन",
+  lbl_radiation:"गर्दन में पहले विकिरण उपचार", lbl_hairloss:"बाल पतले होना / झड़ना",
+  btn_pdf:"PDF रिपोर्ट डाउनलोड करें",
+  sel_yn:["नहीं","हाँ"],
+  sel_yn_diag:["नहीं — निदान नहीं हुआ","हाँ — निदान हुआ"],
+  sel_yn_prediab:["नहीं — निदान नहीं हुआ","हाँ / प्री-डायबिटिक"],
+  sel_yn_none:["कोई नहीं","हाँ"],
+  sel_yn_normal:["नहीं — सामान्य","हाँ"],
+  sel_yn_felt:["नहीं","हाँ — महसूस हुआ"],
+  sel_yn_nochanges:["कोई बदलाव नहीं","हाँ"],
+  sel_yn_relative:["नहीं","हाँ — निकट संबंधी"],
+  sel_yn_visible:["नहीं","हाँ — दिखाई / महसूस होती है"],
+  sel_yn_morning:["नहीं","हाँ — सुबह सूजन"],
+  sel_yn_frequent:["नहीं","हाँ — बार-बार"],
+  sel_smoking:["कभी नहीं","वर्तमान / भूतपूर्व धूम्रपानकर्ता"],
+  sel_alcohol:["नहीं","कभी-कभी","साप्ताहिक नियमित","रोज / भारी"],
+  sel_activity:["बहुत सक्रिय","सप्ताह में 3-4 बार सक्रिय","सप्ताह में 1-2 बार हल्का","निष्क्रिय"],
+  sel_diet:["संतुलित एवं स्वस्थ","अधिकतर घर का खाना","अक्सर फास्ट फूड","बहुत अस्वास्थ्यकर"],
+  sel_stress:["कम","हल्का","मध्यम","अधिक / दीर्घकालिक"],
+  sel_sleep:["8+","7","6","5","4 या कम"],
+  sel_family_hx:["कोई नहीं","एक निकट संबंधी","माता-पिता दोनों / कई"],
+  sel_bp_level:["सामान्य (120/80 से कम)","थोड़ा बढ़ा (120-129)","उच्च स्तर 1 (130-139)","उच्च स्तर 2 (140+)"],
+  sel_chol:["सामान्य (200 से कम)","सीमा रेखा (200-239)","उच्च (240-279)","बहुत उच्च (280+)"],
+  sel_chest_pain:["कोई नहीं","हल्का / असामान्य","सामान्य एनजाइना","गंभीर / कुचलने वाला"],
+  sel_freq3:["कोई नहीं","कभी-कभी","बार-बार"],
+  sel_breathless:["कोई नहीं","केवल भारी परिश्रम में","मध्यम परिश्रम में","आराम करते समय"],
+  sel_exercise_cp:["नहीं","हल्का","बार-बार","हमेशा रुकना पड़ता है"],
+  sel_severity4:["कोई नहीं","हल्का","मध्यम","गंभीर"],
+  sel_severity3:["नहीं","हल्का","महत्वपूर्ण"],
+  sel_sugar:["सामान्य (100 से कम उपवास)","थोड़ा अधिक (100-125)","प्री-डायबिटिक सीमा","बहुत अधिक (200+)"],
+  sel_freq_urine:["सामान्य","कुछ बढ़ा","काफी बढ़ा"],
+  sel_thirst:["सामान्य","कुछ अधिक प्यास","हमेशा प्यास"],
+  sel_slow_heal:["नहीं — सामान्य रूप से ठीक होता है","हाँ — असामान्य रूप से धीरे"],
+  sel_jaundice:["कोई नहीं","हल्का पीलापन","मध्यम","स्पष्ट"],
+  sel_urine_less:["सामान्य","थोड़ा कम","ध्यान देने योग्य कम","बहुत कम"],
+  sel_urine_blood:["नहीं","थोड़ा","अक्सर / दिखाई देता है"],
+  sel_urine_foam:["नहीं","कभी-कभी","बार-बार"],
+  sel_back_pain:["कोई नहीं","हल्का","लगातार / गंभीर"],
+  sel_cycle:["नियमित (28-35 दिन)","थोड़ा अनियमित","बहुत अनियमित","अनुपस्थित"],
+  sel_heavy_period:["सामान्य प्रवाह","भारी","बहुत भारी / लंबे समय तक"],
+  sel_acne:["कोई नहीं","हल्के","मध्यम / सिस्टिक","गंभीर"],
+  sel_breast_pain:["कोई नहीं","हल्का / चक्रीय","लगातार / गंभीर"],
+  sel_urin_diff:["कोई नहीं — सामान्य","हल्की झिझक","मध्यम कठिनाई","गंभीर"],
+  sel_nocturia:["शायद ही कभी","रात में 1-2 बार","रात में 3+ बार"],
+  sel_erectile:["कोई समस्या नहीं","हाँ — नया"],
+  sel_hairloss:["कोई नहीं","ध्यान देने योग्य"],
+ },
+ kn:{
+  s3_title:"ಲಕ್ಷಣಗಳು ಮತ್ತು ಇತಿಹಾಸ", s3_sub:"ಪ್ರತಿ ಟ್ಯಾಬ್ ಆಯ್ಕೆ ಮಾಡಿ ಮತ್ತು ನಿಮ್ಮ ಲಕ್ಷಣಗಳನ್ನು ಪ್ರಾಮಾಣಿಕವಾಗಿ ವರದಿ ಮಾಡಿ",
+  gender_f_sub:"ಪಿಸಿಒಎಸ್ · ಸ್ತನ · ಹಾರ್ಮೋನಲ್", gender_m_sub:"ಪ್ರಾಸ್ಟೇಟ್ · ಹೃದಯ · ಯಕೃತ್ತು",
+  tab_lifestyle:"ಜೀವನಶೈಲಿ", tab_heart:"ಹೃದಯ", tab_diabetes:"ಮಧುಮೇಹ", tab_liver:"ಯಕೃತ್ತು",
+  tab_kidney:"ಮೂತ್ರಪಿಂಡ", tab_hormonal:"ಹಾರ್ಮೋನಲ್", tab_breast:"ಸ್ತನ", tab_prostate:"ಪ್ರಾಸ್ಟೇಟ್", tab_thyroid:"ಥೈರಾಯ್ಡ್",
+  sub_substances:"ವಸ್ತುಗಳು", sub_activity:"ಚಟುವಟಿಕೆ ಮತ್ತು ಆಹಾರ", sub_mental:"ಮಾನಸಿಕ ಮತ್ತು ನಿದ್ರೆ",
+  sub_bp_chol:"ರಕ್ತದೊತ್ತಡ ಮತ್ತು ಕೊಲೆಸ್ಟ್ರಾಲ್", sub_chest:"ಎದೆ ಮತ್ತು ಹೃದಯ ಲಕ್ಷಣಗಳು", sub_exertion:"ಶ್ರಮದ ಲಕ್ಷಣಗಳು",
+  sub_blood_sugar:"ರಕ್ತ ಸಕ್ಕರೆ ಲಕ್ಷಣಗಳು", sub_diab_other:"ಮಧುಮೇಹದ ಇತರ ಲಕ್ಷಣಗಳು",
+  sub_liver_sym:"ಯಕೃತ್ತಿನ ಲಕ್ಷಣಗಳು", sub_digestive:"ಜೀರ್ಣಕ್ರಿಯೆ",
+  sub_urinary:"ಮೂತ್ರ ಲಕ್ಷಣಗಳು", sub_back_swell:"ಬೆನ್ನು ಮತ್ತು ಊತ",
+  sub_menstrual:"ಮುಟ್ಟಿನ ಆರೋಗ್ಯ", sub_pcos_signs:"ಪಿಸಿಒಎಸ್ ಲಕ್ಷಣಗಳು",
+  sub_breast_sym:"ಸ್ತನ ಲಕ್ಷಣಗಳು", sub_breast_risk:"ಸ್ತನ ಅಪಾಯ ಅಂಶಗಳು",
+  sub_prostate:"ಮೂತ್ರ / ಪ್ರಾಸ್ಟೇಟ್ ಲಕ್ಷಣಗಳು", sub_pain:"ನೋವು",
+  sub_thyroid_sym:"ಥೈರಾಯ್ಡ್ ಲಕ್ಷಣಗಳು", sub_risk_factors:"ಅಪಾಯ ಅಂಶಗಳು",
+  lbl_hypert:"ಅಧಿಕ ರಕ್ತದೊತ್ತಡ ರೋಗನಿರ್ಣಯ ಆಗಿದೆಯೇ?", lbl_diag_diab:"ಮಧುಮೇಹ ರೋಗನಿರ್ಣಯ ಆಗಿದೆಯೇ?",
+  lbl_smoking:"ಧೂಮಪಾನ", lbl_alcohol:"ಮದ್ಯಪಾನ", lbl_activity:"ದೈಹಿಕ ಚಟುವಟಿಕೆ", lbl_diet_quality:"ಆಹಾರ ಗುಣಮಟ್ಟ",
+  lbl_stress:"ಒತ್ತಡ ಮಟ್ಟ", lbl_sleep:"ನಿದ್ರೆ (ಗಂಟೆ/ರಾತ್ರಿ)", lbl_family_hx:"ಪ್ರಮುಖ ರೋಗದ ಕೌಟುಂಬಿಕ ಇತಿಹಾಸ",
+  lbl_bp_level:"ರಕ್ತದೊತ್ತಡ ಮಟ್ಟ", lbl_cholesterol:"ಕೊಲೆಸ್ಟ್ರಾಲ್ (ಸ್ವಯಂ-ಮೌಲ್ಯಮಾಪನ)",
+  lbl_chest_pain:"ಎದೆ ನೋವು / ಅಸ್ವಸ್ಥತೆ", lbl_chest_tight:"ಎದೆ ಬಿಗಿತ / ಒತ್ತಡ",
+  lbl_palpitations:"ಹೃದಯ ಬಡಿತ ಹೆಚ್ಚಾಗುವುದು", lbl_irreg_hb:"ಅನಿಯಮಿತ ಹೃದಯ ಬಡಿತ",
+  lbl_breathless:"ಉಸಿರಾಟ ತೊಂದರೆ", lbl_exercise_cp:"ವ್ಯಾಯಾಮದ ಸಮಯದಲ್ಲಿ ಎದೆ ನೋವು", lbl_swelling:"ಕಾಲು / ಮೊಣಕಾಲು ಊತ",
+  lbl_sugar:"ರಕ್ತ ಸಕ್ಕರೆ (ಸ್ವಯಂ-ಮೌಲ್ಯಮಾಪನ)", lbl_freq_urine:"ಆಗಾಗ / ಅಧಿಕ ಮೂತ್ರ ವಿಸರ್ಜನೆ", lbl_thirst:"ಅಧಿಕ ಬಾಯಾರಿಕೆ",
+  lbl_blur_vis:"ಮಸುಕಾದ ದೃಷ್ಟಿ", lbl_slow_heal:"ಗಾಯ ನಿಧಾನವಾಗಿ ಗುಣವಾಗುವುದು", lbl_tingling:"ಕೈಕಾಲುಗಳಲ್ಲಿ ಮಿಣಿ ಮಿಣಿ / ಮರಗಟ್ಟುವಿಕೆ", lbl_fatigue:"ದಣಿವು / ಕಡಿಮೆ ಶಕ್ತಿ",
+  lbl_jaundice:"ಕಾಮಾಲೆ (ಚರ್ಮ / ಕಣ್ಣು ಹಳದಿ)", lbl_dark_urine:"ಕಡು ಬಣ್ಣದ ಮೂತ್ರ", lbl_pale_stool:"ತಿಳಿ / ಜೇಡಿ ಮಣ್ಣಿನ ಬಣ್ಣದ ಮಲ",
+  lbl_itching:"ಇಡೀ ಶರೀರದಲ್ಲಿ ತುರಿಕೆ", lbl_abdominal:"ಹೊಟ್ಟೆ ನೋವು / ಉಬ್ಬರ", lbl_liver_tender:"ಬಲ ಮೇಲ್ಭಾಗ ಹೊಟ್ಟೆ ನೋವು",
+  lbl_nausea:"ವಾಂತಿ ಭಾವ / ವಾಂತಿ", lbl_wtloss:"ಅನಿರ್ದಿಷ್ಟ ತೂಕ ಇಳಿಕೆ",
+  lbl_urine_less:"ಮೂತ್ರ ಕಡಿಮೆ ಆಗುವುದು", lbl_urine_blood:"ಮೂತ್ರದಲ್ಲಿ ರಕ್ತ", lbl_urine_foam:"ನೊರೆ ಮೂತ್ರ",
+  lbl_back_pain:"ಬೆನ್ನಿನ ಕೆಳಭಾಗ / ಪಕ್ಕ ನೋವು", lbl_puffiness:"ಕಣ್ಣು / ಮುಖದ ಸುತ್ತ ಊತ", lbl_leg_cramps:"ಕಾಲು ಸೆಳೆತ",
+  lbl_cycle:"ಮುಟ್ಟಿನ ಚಕ್ರ ನಿಯಮಿತತೆ", lbl_heavy_period:"ಭಾರ ಅಥವಾ ದೀರ್ಘ ಮುಟ್ಟು",
+  lbl_facial_hair:"ಮುಖ / ಶರೀರದ ಅಧಿಕ ರೋಮ", lbl_dark_skin:"ಚರ್ಮ ಕಪ್ಪಾಗುವುದು (ಕತ್ತು / ತೋಳ ಬೀಳು)",
+  lbl_acne:"ಮೊಡವೆ / ಸಿಸ್ಟಿಕ್ ದದ್ದು", lbl_wtgain:"ಅನಿರ್ದಿಷ್ಟ ತೂಕ ಹೆಚ್ಚಳ",
+  lbl_breast_lump:"ಸ್ತನದಲ್ಲಿ ಗಡ್ಡೆ ಅಥವಾ ದಪ್ಪವಾಗುವಿಕೆ", lbl_breast_pain:"ಸ್ತನ ನೋವು / ಸೂಕ್ಷ್ಮತೆ",
+  lbl_nipple_disc:"ಮೊಲೆತೊಟ್ಟಿನಿಂದ ಸ್ರಾವ (ಹಾಲಲ್ಲ)", lbl_breast_skin:"ಸ್ತನ ಚರ್ಮ ಬದಲಾವಣೆ", lbl_breast_fam:"ಸ್ತನ ಕ್ಯಾನ್ಸರ್ ಕೌಟುಂಬಿಕ ಇತಿಹಾಸ",
+  lbl_urin_diff:"ಮೂತ್ರ ವಿಸರ್ಜನೆ ಕಷ್ಟ / ದುರ್ಬಲ ಧಾರೆ", lbl_nocturia:"ರಾತ್ರಿ ಮೂತ್ರಕ್ಕಾಗಿ ಏಳುವುದು",
+  lbl_blood_semen:"ವೀರ್ಯದಲ್ಲಿ ರಕ್ತ", lbl_pelvic_pain:"ಶ್ರೋಣಿ / ಬೆನ್ನಿನ ಕೆಳಭಾಗ ನೋವು", lbl_erectile:"ಸ್ತಂಭನ ದೋಷ",
+  lbl_thyroid_swell:"ಕತ್ತಿನ ಊತ ಅಥವಾ ಗಡ್ಡೆ", lbl_cold_intol:"ಯಾವಾಗಲೂ ಶೀತ ಭಾವ",
+  lbl_heat_intol:"ಅಧಿಕ ಬೆವರು / ಶಾಖ ಅಸಹಿಷ್ಣುತೆ", lbl_voice_chg:"ಧ್ವನಿ ಒರಟಾಗುವಿಕೆ",
+  lbl_radiation:"ಹಿಂದೆ ಕತ್ತಿಗೆ ವಿಕಿರಣ ಚಿಕಿತ್ಸೆ", lbl_hairloss:"ಕೂದಲು ತೆಳ್ಳಗಾಗುವಿಕೆ / ಉದುರುವಿಕೆ",
+  btn_pdf:"PDF ವರದಿ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ",
+  sel_yn:["ಇಲ್ಲ","ಹೌದು"],
+  sel_yn_diag:["ಇಲ್ಲ — ರೋಗನಿರ್ಣಯ ಆಗಿಲ್ಲ","ಹೌದು — ರೋಗನಿರ್ಣಯ ಆಗಿದೆ"],
+  sel_yn_prediab:["ಇಲ್ಲ — ರೋಗನಿರ್ಣಯ ಆಗಿಲ್ಲ","ಹೌದು / ಪ್ರಿ-ಡಯಾಬಿಟಿಕ್"],
+  sel_yn_none:["ಯಾವುದೂ ಇಲ್ಲ","ಹೌದು"],
+  sel_yn_normal:["ಇಲ್ಲ — ಸಾಮಾನ್ಯ","ಹೌದು"],
+  sel_yn_felt:["ಇಲ್ಲ","ಹೌದು — ಅನುಭವಿಸಲಾಗಿದೆ"],
+  sel_yn_nochanges:["ಯಾವುದೇ ಬದಲಾವಣೆ ಇಲ್ಲ","ಹೌದು"],
+  sel_yn_relative:["ಇಲ್ಲ","ಹೌದು — ನಿಕಟ ಸಂಬಂಧಿ"],
+  sel_yn_visible:["ಇಲ್ಲ","ಹೌದು — ಕಾಣಿಸುತ್ತದೆ"],
+  sel_yn_morning:["ಇಲ್ಲ","ಹೌದು — ಬೆಳಿಗ್ಗೆ ಊತ"],
+  sel_yn_frequent:["ಇಲ್ಲ","ಹೌದು — ಆಗಾಗ"],
+  sel_smoking:["ಎಂದಿಗೂ ಇಲ್ಲ","ಪ್ರಸ್ತುತ / ಹಿಂದಿನ ಧೂಮಪಾನಿ"],
+  sel_alcohol:["ಇಲ್ಲ","ಕೆಲವೊಮ್ಮೆ","ವಾರಕ್ಕೊಮ್ಮೆ","ಪ್ರತಿದಿನ / ಅಧಿಕ"],
+  sel_activity:["ತುಂಬಾ ಸಕ್ರಿಯ","ವಾರಕ್ಕೆ 3-4 ಬಾರಿ","ವಾರಕ್ಕೆ 1-2 ಬಾರಿ ಹಗುರ","ನಿಷ್ಕ್ರಿಯ"],
+  sel_diet:["ಸಮತೋಲಿತ ಮತ್ತು ಆರೋಗ್ಯಕರ","ಅಧಿಕಾಂಶ ಮನೆಯ ಆಹಾರ","ಆಗಾಗ ಫಾಸ್ಟ್ ಫುಡ್","ತುಂಬಾ ಅಆರೋಗ್ಯಕರ"],
+  sel_stress:["ಕಡಿಮೆ","ಮೃದು","ಮಧ್ಯಮ","ಅಧಿಕ / ದೀರ್ಘಕಾಲಿಕ"],
+  sel_sleep:["8+","7","6","5","4 ಅಥವಾ ಕಡಿಮೆ"],
+  sel_family_hx:["ಯಾರೂ ಇಲ್ಲ","ಒಬ್ಬ ನಿಕಟ ಸಂಬಂಧಿ","ತಂದೆ-ತಾಯಿ ಇಬ್ಬರೂ / ಹಲವರು"],
+  sel_bp_level:["ಸಾಮಾನ್ಯ (120/80 ಕೆಳಗೆ)","ಸ್ವಲ್ಪ ಹೆಚ್ಚು (120-129)","ಹೆಚ್ಚು ಹಂತ 1 (130-139)","ಹೆಚ್ಚು ಹಂತ 2 (140+)"],
+  sel_chol:["ಸಾಮಾನ್ಯ (200 ಕೆಳಗೆ)","ಗಡಿ (200-239)","ಹೆಚ್ಚು (240-279)","ತುಂಬಾ ಹೆಚ್ಚು (280+)"],
+  sel_chest_pain:["ಯಾವುದೂ ಇಲ್ಲ","ಹಗುರ / ವಿಶಿಷ್ಟ","ಸಾಮಾನ್ಯ ಆಂಜಿನಾ","ತೀವ್ರ / ಒತ್ತಡ"],
+  sel_freq3:["ಯಾವುದೂ ಇಲ್ಲ","ಕೆಲವೊಮ್ಮೆ","ಆಗಾಗ"],
+  sel_breathless:["ಯಾವುದೂ ಇಲ್ಲ","ತೀವ್ರ ಶ್ರಮದಲ್ಲಿ ಮಾತ್ರ","ಮಧ್ಯಮ ಶ್ರಮದಲ್ಲಿ","ವಿಶ್ರಾಂತಿಯಲ್ಲಿ"],
+  sel_exercise_cp:["ಇಲ್ಲ","ಹಗುರ","ಆಗಾಗ","ಯಾವಾಗಲೂ ನಿಲ್ಲಿಸಬೇಕು"],
+  sel_severity4:["ಯಾವುದೂ ಇಲ್ಲ","ಹಗುರ","ಮಧ್ಯಮ","ತೀವ್ರ"],
+  sel_severity3:["ಇಲ್ಲ","ಹಗುರ","ಮಹತ್ವಪೂರ್ಣ"],
+  sel_sugar:["ಸಾಮಾನ್ಯ (100 ಕೆಳಗೆ ಉಪವಾಸ)","ಸ್ವಲ್ಪ ಹೆಚ್ಚು (100-125)","ಪ್ರಿ-ಡಯಾಬಿಟಿಕ್ ವ್ಯಾಪ್ತಿ","ತುಂಬಾ ಹೆಚ್ಚು (200+)"],
+  sel_freq_urine:["ಸಾಮಾನ್ಯ","ಸ್ವಲ್ಪ ಹೆಚ್ಚು","ಗಮನಾರ್ಹ ಹೆಚ್ಚು"],
+  sel_thirst:["ಸಾಮಾನ್ಯ","ಸ್ವಲ್ಪ ಬಾಯಾರಿಕೆ","ಯಾವಾಗಲೂ ಬಾಯಾರಿಕೆ"],
+  sel_slow_heal:["ಇಲ್ಲ — ಸಾಮಾನ್ಯವಾಗಿ ಗುಣವಾಗುತ್ತದೆ","ಹೌದು — ಅಸಾಮಾನ್ಯವಾಗಿ ನಿಧಾನ"],
+  sel_jaundice:["ಯಾವುದೂ ಇಲ್ಲ","ಹಗುರ ಹಳದಿ","ಮಧ್ಯಮ","ಸ್ಪಷ್ಟ"],
+  sel_urine_less:["ಸಾಮಾನ್ಯ","ಸ್ವಲ್ಪ ಕಡಿಮೆ","ಗಮನಾರ್ಹ ಕಡಿಮೆ","ತುಂಬಾ ಕಡಿಮೆ"],
+  sel_urine_blood:["ಇಲ್ಲ","ಸ್ವಲ್ಪ","ಆಗಾಗ / ಕಾಣಿಸುತ್ತದೆ"],
+  sel_urine_foam:["ಇಲ್ಲ","ಕೆಲವೊಮ್ಮೆ","ಆಗಾಗ"],
+  sel_back_pain:["ಯಾವುದೂ ಇಲ್ಲ","ಹಗುರ","ನಿರಂತರ / ತೀವ್ರ"],
+  sel_cycle:["ನಿಯಮಿತ (28-35 ದಿನ)","ಸ್ವಲ್ಪ ಅನಿಯಮಿತ","ತುಂಬಾ ಅನಿಯಮಿತ","ಇಲ್ಲ"],
+  sel_heavy_period:["ಸಾಮಾನ್ಯ ಹರಿವು","ಭಾರ","ತುಂಬಾ ಭಾರ / ದೀರ್ಘ"],
+  sel_acne:["ಯಾವುದೂ ಇಲ್ಲ","ಹಗುರ","ಮಧ್ಯಮ / ಸಿಸ್ಟಿಕ್","ತೀವ್ರ"],
+  sel_breast_pain:["ಯಾವುದೂ ಇಲ್ಲ","ಹಗುರ / ಚಕ್ರೀಯ","ನಿರಂತರ / ತೀವ್ರ"],
+  sel_urin_diff:["ಯಾವುದೂ ಇಲ್ಲ — ಸಾಮಾನ್ಯ","ಹಗುರ ಹಿಂಜರಿಕೆ","ಮಧ್ಯಮ ಕಷ್ಟ","ತೀವ್ರ"],
+  sel_nocturia:["ವಿರಳವಾಗಿ","ರಾತ್ರಿ 1-2 ಬಾರಿ","ರಾತ್ರಿ 3+ ಬಾರಿ"],
+  sel_erectile:["ಯಾವುದೇ ಸಮಸ್ಯೆ ಇಲ್ಲ","ಹೌದು — ಹೊಸದಾಗಿ"],
+  sel_hairloss:["ಯಾವುದೂ ಇಲ್ಲ","ಗಮನಾರ್ಹ"],
+ },
+ te:{
+  s3_title:"లక్షణాలు మరియు చరిత్ర", s3_sub:"ప్రతి టాబ్ ఎంచుకొని మీ లక్షణాలను నిజాయితీగా నివేదించండి",
+  gender_f_sub:"పిసిఓఎస్ · స్తన · హార్మోనల్", gender_m_sub:"ప్రోస్టేట్ · హృదయం · కాలేయం",
+  tab_lifestyle:"జీవనశైలి", tab_heart:"హృదయం", tab_diabetes:"మధుమేహం", tab_liver:"కాలేయం",
+  tab_kidney:"మూత్రపిండాలు", tab_hormonal:"హార్మోనల్", tab_breast:"స్తనం", tab_prostate:"ప్రోస్టేట్", tab_thyroid:"థైరాయిడ్",
+  sub_substances:"పదార్థాలు", sub_activity:"శారీరక చర్య మరియు ఆహారం", sub_mental:"మానసిక మరియు నిద్ర",
+  sub_bp_chol:"రక్తపోటు మరియు కొలెస్ట్రాల్", sub_chest:"ఛాతీ మరియు హృదయ లక్షణాలు", sub_exertion:"శ్రమ లక్షణాలు",
+  sub_blood_sugar:"రక్త చక్కెర లక్షణాలు", sub_diab_other:"మధుమేహం ఇతర సూచనలు",
+  sub_liver_sym:"కాలేయ లక్షణాలు", sub_digestive:"జీర్ణక్రియ",
+  sub_urinary:"మూత్ర లక్షణాలు", sub_back_swell:"వీపు మరియు వాపు",
+  sub_menstrual:"ఋతు ఆరోగ్యం", sub_pcos_signs:"పిసిఓఎస్ సూచనలు",
+  sub_breast_sym:"స్తన లక్షణాలు", sub_breast_risk:"స్తన ప్రమాద కారకాలు",
+  sub_prostate:"మూత్ర / ప్రోస్టేట్ లక్షణాలు", sub_pain:"నొప్పి",
+  sub_thyroid_sym:"థైరాయిడ్ లక్షణాలు", sub_risk_factors:"ప్రమాద కారకాలు",
+  lbl_hypert:"అధిక రక్తపోటు నిర్ధారణ అయిందా?", lbl_diag_diab:"మధుమేహం నిర్ధారణ అయిందా?",
+  lbl_smoking:"ధూమపానం", lbl_alcohol:"మద్యపానం", lbl_activity:"శారీరక చర్య", lbl_diet_quality:"ఆహార నాణ్యత",
+  lbl_stress:"ఒత్తిడి స్థాయి", lbl_sleep:"నిద్ర (గంటలు/రాత్రి)", lbl_family_hx:"ముఖ్యమైన వ్యాధి కుటుంబ చరిత్ర",
+  lbl_bp_level:"రక్తపోటు స్థాయి", lbl_cholesterol:"కొలెస్ట్రాల్ (స్వయం-అంచనా)",
+  lbl_chest_pain:"ఛాతీ నొప్పి / అసౌకర్యం", lbl_chest_tight:"ఛాతీ బిగుసుకోవడం / ఒత్తిడి",
+  lbl_palpitations:"గుండె దడ పెరగడం", lbl_irreg_hb:"అనియమిత గుండె చప్పుడు",
+  lbl_breathless:"శ్వాస తీసుకోవడంలో ఇబ్బంది", lbl_exercise_cp:"వ్యాయామ సమయంలో ఛాతీ నొప్పి", lbl_swelling:"కాళ్ళు / మడమల వాపు",
+  lbl_sugar:"రక్త చక్కెర (స్వయం-అంచనా)", lbl_freq_urine:"తరచుగా / అధికంగా మూత్రం", lbl_thirst:"అధిక దప్పిక",
+  lbl_blur_vis:"మసకబారిన దృష్టి", lbl_slow_heal:"గాయాలు నెమ్మదిగా మానడం", lbl_tingling:"చేతులు / కాళ్ళలో జలదరింపు / తిమ్మిరి", lbl_fatigue:"అలసట / తక్కువ శక్తి",
+  lbl_jaundice:"కామెర్లు (చర్మం / కళ్ళు పసుపు)", lbl_dark_urine:"గాఢ రంగు మూత్రం", lbl_pale_stool:"పాలిపోయిన / మట్టి రంగు మలం",
+  lbl_itching:"శరీరమంతా దురద", lbl_abdominal:"పొట్ట నొప్పి / ఉబ్బరం", lbl_liver_tender:"కుడి పొట్ట పై భాగంలో నొప్పి",
+  lbl_nausea:"వికారం / వాంతి", lbl_wtloss:"అనూహ్య బరువు తగ్గడం",
+  lbl_urine_less:"మూత్రం తక్కువ రావడం", lbl_urine_blood:"మూత్రంలో రక్తం", lbl_urine_foam:"నురుగు మూత్రం",
+  lbl_back_pain:"వీపు క్రింద / పక్క నొప్పి", lbl_puffiness:"కళ్ళ / ముఖం చుట్టూ వాపు", lbl_leg_cramps:"కాలు తిమ్మిర్లు",
+  lbl_cycle:"ఋతుచక్రం నియమితత", lbl_heavy_period:"భారమైన లేదా దీర్ఘకాలిక ఋతుస్రావం",
+  lbl_facial_hair:"ముఖం / శరీరంపై అధిక వెంట్రుకలు", lbl_dark_skin:"చర్మం నల్లబడటం (మెడ / చంకలు)",
+  lbl_acne:"మొటిమలు / సిస్టిక్ దద్దుర్లు", lbl_wtgain:"అనూహ్య బరువు పెరగడం",
+  lbl_breast_lump:"స్తనంలో ముద్ద లేదా మందంగా ఉండటం", lbl_breast_pain:"స్తన నొప్పి / సున్నితత్వం",
+  lbl_nipple_disc:"చనుమొన నుండి స్రావం (పాలు కాదు)", lbl_breast_skin:"స్తన చర్మంలో మార్పు", lbl_breast_fam:"స్తన క్యాన్సర్ కుటుంబ చరిత్ర",
+  lbl_urin_diff:"మూత్రం చేయడంలో ఇబ్బంది / బలహీన ధార", lbl_nocturia:"రాత్రి మూత్రానికి లేవడం",
+  lbl_blood_semen:"వీర్యంలో రక్తం", lbl_pelvic_pain:"శ్రోణి / వీపు క్రింద నొప్పి", lbl_erectile:"లైంగిక నపుంసకత్వం",
+  lbl_thyroid_swell:"మెడలో వాపు లేదా ముద్ద", lbl_cold_intol:"ఎప్పుడూ చలిగా అనిపించడం",
+  lbl_heat_intol:"అధిక చెమట / వేడి అసహనం", lbl_voice_chg:"గొంతు కంఠస్వరం మారడం",
+  lbl_radiation:"మెడకు రేడియేషన్ చికిత్స చరిత్ర", lbl_hairloss:"వెంట్రుకలు సన్నబడటం / రాలడం",
+  btn_pdf:"PDF నివేదిక డౌన్‌లోడ్ చేయండి",
+  sel_yn:["లేదు","అవును"],
+  sel_yn_diag:["లేదు — నిర్ధారించబడలేదు","అవును — నిర్ధారించబడింది"],
+  sel_yn_prediab:["లేదు — నిర్ధారించబడలేదు","అవును / ప్రీ-డయాబెటిక్"],
+  sel_yn_none:["ఏదీ లేదు","అవును"],
+  sel_yn_normal:["లేదు — సాధారణం","అవును"],
+  sel_yn_felt:["లేదు","అవును — అనుభవించారు"],
+  sel_yn_nochanges:["మార్పులేమీ లేవు","అవును"],
+  sel_yn_relative:["లేదు","అవును — దగ్గరి బంధువు"],
+  sel_yn_visible:["లేదు","అవును — కనిపిస్తుంది"],
+  sel_yn_morning:["లేదు","అవును — ఉదయం వాపు"],
+  sel_yn_frequent:["లేదు","అవును — తరచుగా"],
+  sel_smoking:["ఎప్పుడూ లేదు","ప్రస్తుత / మాజీ ధూమపాని"],
+  sel_alcohol:["లేదు","అప్పుడప్పుడు","వారానికి క్రమంగా","రోజూ / అధికంగా"],
+  sel_activity:["చాలా చురుకుగా","వారానికి 3-4 సార్లు","వారానికి 1-2 సార్లు తేలికగా","నిష్క్రియంగా"],
+  sel_diet:["సమతుల్య మరియు ఆరోగ్యకరమైన","ఎక్కువగా ఇంటి వంట","తరచుగా ఫాస్ట్ ఫుడ్","చాలా అనారోగ్యకరమైన"],
+  sel_stress:["తక్కువ","మృదువైన","మధ్యస్థం","అధిక / దీర్ఘకాలిక"],
+  sel_sleep:["8+","7","6","5","4 లేదా తక్కువ"],
+  sel_family_hx:["ఎవరూ లేరు","ఒక దగ్గరి బంధువు","తల్లిదండ్రులు ఇద్దరూ / చాలా మంది"],
+  sel_bp_level:["సాధారణం (120/80 కింద)","కొంచెం ఎక్కువ (120-129)","అధిక దశ 1 (130-139)","అధిక దశ 2 (140+)"],
+  sel_chol:["సాధారణం (200 కింద)","సరిహద్దు (200-239)","అధిక (240-279)","చాలా అధిక (280+)"],
+  sel_chest_pain:["ఏదీ లేదు","తేలికైన / అసాధారణ","సాధారణ ఆంజీనా","తీవ్రమైన / నలిచే"],
+  sel_freq3:["ఏదీ లేదు","అప్పుడప్పుడు","తరచుగా"],
+  sel_breathless:["ఏదీ లేదు","తీవ్రమైన శ్రమలో మాత్రమే","మధ్యస్థ శ్రమలో","విశ్రాంతిలో"],
+  sel_exercise_cp:["లేదు","తేలికైన","తరచుగా","ఎప్పుడూ ఆపుకోవాలి"],
+  sel_severity4:["ఏదీ లేదు","తేలికైన","మధ్యస్థం","తీవ్రమైన"],
+  sel_severity3:["లేదు","తేలికైన","ముఖ్యమైన"],
+  sel_sugar:["సాధారణం (100 కింద ఉపవాసం)","కొంచెం ఎక్కువ (100-125)","ప్రీ-డయాబెటిక్ పరిధి","చాలా ఎక్కువ (200+)"],
+  sel_freq_urine:["సాధారణం","కొంచెం పెరిగింది","గణనీయంగా పెరిగింది"],
+  sel_thirst:["సాధారణం","కొంచెం దప్పిక","ఎప్పుడూ దప్పిక"],
+  sel_slow_heal:["లేదు — సాధారణంగా మానుతుంది","అవును — అసాధారణంగా నెమ్మది"],
+  sel_jaundice:["ఏదీ లేదు","తేలికైన పసుపు","మధ్యస్థం","స్పష్టంగా"],
+  sel_urine_less:["సాధారణం","కొంచెం తక్కువ","గమనించదగ్గ తక్కువ","చాలా తక్కువ"],
+  sel_urine_blood:["లేదు","కొంచెం","తరచుగా / కనిపిస్తుంది"],
+  sel_urine_foam:["లేదు","అప్పుడప్పుడు","తరచుగా"],
+  sel_back_pain:["ఏదీ లేదు","తేలికైన","నిరంతర / తీవ్రమైన"],
+  sel_cycle:["క్రమంగా (28-35 రోజులు)","కొంచెం అనియమితం","చాలా అనియమితం","లేదు"],
+  sel_heavy_period:["సాధారణ ప్రవాహం","భారంగా","చాలా భారంగా / దీర్ఘంగా"],
+  sel_acne:["ఏదీ లేదు","తేలికైన","మధ్యస్థం / సిస్టిక్","తీవ్రమైన"],
+  sel_breast_pain:["ఏదీ లేదు","తేలికైన / చక్రీయ","నిరంతర / తీవ్రమైన"],
+  sel_urin_diff:["ఏదీ లేదు — సాధారణం","తేలికైన సంకోచం","మధ్యస్థ ఇబ్బంది","తీవ్రమైన"],
+  sel_nocturia:["అరుదుగా","రాత్రి 1-2 సార్లు","రాత్రి 3+ సార్లు"],
+  sel_erectile:["సమస్యలేమీ లేవు","అవును — కొత్తగా"],
+  sel_hairloss:["ఏదీ లేదు","గమనించదగ్గ"],
+ },
+ ta:{
+  s3_title:"அறிகுறிகள் மற்றும் வரலாறு", s3_sub:"ஒவ்வொரு தாவலையும் தேர்ந்தெடுத்து உங்கள் அறிகுறிகளை நேர்மையாக தெரிவிக்கவும்",
+  gender_f_sub:"பிசிஓஎஸ் · மார்பகம் · ஹார்மோனல்", gender_m_sub:"புரோஸ்டேட் · இதயம் · கல்லீரல்",
+  tab_lifestyle:"வாழ்க்கை முறை", tab_heart:"இதயம்", tab_diabetes:"நீரிழிவு", tab_liver:"கல்லீரல்",
+  tab_kidney:"சிறுநீரகம்", tab_hormonal:"ஹார்மோனல்", tab_breast:"மார்பகம்", tab_prostate:"புரோஸ்டேட்", tab_thyroid:"தைராய்டு",
+  sub_substances:"பொருட்கள்", sub_activity:"உடல் செயல்பாடு மற்றும் உணவு", sub_mental:"மன மற்றும் தூக்கம்",
+  sub_bp_chol:"இரத்த அழுத்தம் மற்றும் கொலஸ்ட்ரால்", sub_chest:"மார்பு மற்றும் இதய அறிகுறிகள்", sub_exertion:"உழைப்பு அறிகுறிகள்",
+  sub_blood_sugar:"இரத்த சர்க்கரை அறிகுறிகள்", sub_diab_other:"நீரிழிவின் பிற அறிகுறிகள்",
+  sub_liver_sym:"கல்லீரல் அறிகுறிகள்", sub_digestive:"செரிமானம்",
+  sub_urinary:"சிறுநீர் அறிகுறிகள்", sub_back_swell:"முதுகு மற்றும் வீக்கம்",
+  sub_menstrual:"மாதவிடாய் ஆரோக்கியம்", sub_pcos_signs:"பிசிஓஎஸ் அறிகுறிகள்",
+  sub_breast_sym:"மார்பக அறிகுறிகள்", sub_breast_risk:"மார்பக ஆபத்து காரணிகள்",
+  sub_prostate:"சிறுநீர் / புரோஸ்டேட் அறிகுறிகள்", sub_pain:"வலி",
+  sub_thyroid_sym:"தைராய்டு அறிகுறிகள்", sub_risk_factors:"ஆபத்து காரணிகள்",
+  lbl_hypert:"உயர் இரத்த அழுத்தம் கண்டறியப்பட்டதா?", lbl_diag_diab:"நீரிழிவு கண்டறியப்பட்டதா?",
+  lbl_smoking:"புகைப்பிடித்தல்", lbl_alcohol:"மதுபானம்", lbl_activity:"உடல் செயல்பாடு", lbl_diet_quality:"உணவு தரம்",
+  lbl_stress:"மன அழுத்த நிலை", lbl_sleep:"தூக்கம் (மணி/இரவு)", lbl_family_hx:"முக்கிய நோயின் குடும்ப வரலாறு",
+  lbl_bp_level:"இரத்த அழுத்த நிலை", lbl_cholesterol:"கொலஸ்ட்ரால் (சுய-மதிப்பீடு)",
+  lbl_chest_pain:"மார்பு வலி / அசௌகரியம்", lbl_chest_tight:"மார்பு இறுக்கம் / அழுத்தம்",
+  lbl_palpitations:"இதயத் துடிப்பு அதிகரிப்பு", lbl_irreg_hb:"ஒழுங்கற்ற இதயத் துடிப்பு",
+  lbl_breathless:"மூச்சு திணறல்", lbl_exercise_cp:"உடற்பயிற்சியின் போது மார்பு வலி", lbl_swelling:"கால் / கணுக்கால் வீக்கம்",
+  lbl_sugar:"இரத்த சர்க்கரை (சுய-மதிப்பீடு)", lbl_freq_urine:"அடிக்கடி / அதிகமாக சிறுநீர்", lbl_thirst:"அதிக தாகம்",
+  lbl_blur_vis:"மங்கலான பார்வை", lbl_slow_heal:"காயங்கள் மெதுவாக ஆறுவது", lbl_tingling:"கைகால்களில் கூச்சம் / உணர்வின்மை", lbl_fatigue:"சோர்வு / குறைந்த ஆற்றல்",
+  lbl_jaundice:"மஞ்சள் காமாலை (தோல் / கண்கள்)", lbl_dark_urine:"கருமையான சிறுநீர்", lbl_pale_stool:"வெளிர் / களிமண் நிற மலம்",
+  lbl_itching:"உடல் முழுவதும் அரிப்பு", lbl_abdominal:"வயிற்று வலி / வீக்கம்", lbl_liver_tender:"வலது மேல் வயிறு வலி",
+  lbl_nausea:"குமட்டல் / வாந்தி", lbl_wtloss:"காரணமில்லாத எடை குறைவு",
+  lbl_urine_less:"சிறுநீர் குறைவாக வருவது", lbl_urine_blood:"சிறுநீரில் இரத்தம்", lbl_urine_foam:"நுரை சிறுநீர்",
+  lbl_back_pain:"முதுகு கீழ் / பக்க வலி", lbl_puffiness:"கண்கள் / முகத்தில் வீக்கம்", lbl_leg_cramps:"கால் பிடிப்பு",
+  lbl_cycle:"மாதவிடாய் சுழற்சி ஒழுங்குமுறை", lbl_heavy_period:"அதிக அல்லது நீடித்த மாதவிடாய்",
+  lbl_facial_hair:"முகம் / உடலில் அதிக முடி", lbl_dark_skin:"தோல் கருமை (கழுத்து / அக்குள்)",
+  lbl_acne:"முகப்பரு / சிஸ்டிக் கொப்புளங்கள்", lbl_wtgain:"காரணமில்லாத எடை அதிகரிப்பு",
+  lbl_breast_lump:"மார்பகத்தில் கட்டி", lbl_breast_pain:"மார்பக வலி / உணர்திறன்",
+  lbl_nipple_disc:"காம்பிலிருந்து சுரப்பு (பால் அல்ல)", lbl_breast_skin:"மார்பக தோல் மாற்றம்", lbl_breast_fam:"மார்பக புற்றுநோய் குடும்ப வரலாறு",
+  lbl_urin_diff:"சிறுநீர் கழிக்க சிரமம் / பலவீனமான ஓட்டம்", lbl_nocturia:"இரவில் சிறுநீருக்கு எழுவது",
+  lbl_blood_semen:"விந்தில் இரத்தம்", lbl_pelvic_pain:"இடுப்பு / முதுகு கீழ் வலி", lbl_erectile:"விறைப்பு குறைபாடு",
+  lbl_thyroid_swell:"கழுத்தில் வீக்கம் அல்லது கட்டி", lbl_cold_intol:"எப்போதும் குளிராக உணர்வு",
+  lbl_heat_intol:"அதிக வியர்வை / வெப்ப சகிப்பின்மை", lbl_voice_chg:"குரல் கர்கசமாதல்",
+  lbl_radiation:"முன்பு கழுத்துக்கு கதிர்வீச்சு சிகிச்சை", lbl_hairloss:"முடி மெலிவு / உதிர்வு",
+  btn_pdf:"PDF அறிக்கை பதிவிறக்கவும்",
+  sel_yn:["இல்லை","ஆம்"],
+  sel_yn_diag:["இல்லை — கண்டறியப்படவில்லை","ஆம் — கண்டறியப்பட்டது"],
+  sel_yn_prediab:["இல்லை — கண்டறியப்படவில்லை","ஆம் / ப்ரீ-டயாபெடிக்"],
+  sel_yn_none:["எதுவும் இல்லை","ஆம்"],
+  sel_yn_normal:["இல்லை — சாதாரணம்","ஆம்"],
+  sel_yn_felt:["இல்லை","ஆம் — உணரப்பட்டது"],
+  sel_yn_nochanges:["மாற்றங்கள் இல்லை","ஆம்"],
+  sel_yn_relative:["இல்லை","ஆம் — நெருங்கிய உறவினர்"],
+  sel_yn_visible:["இல்லை","ஆம் — தெரிகிறது"],
+  sel_yn_morning:["இல்லை","ஆம் — காலை வீக்கம்"],
+  sel_yn_frequent:["இல்லை","ஆம் — அடிக்கடி"],
+  sel_smoking:["ஒருபோதும் இல்லை","தற்போதைய / முன்னாள் புகைப்பவர்"],
+  sel_alcohol:["இல்லை","எப்போதாவது","வாராந்திர தொடர்ச்சியாக","தினமும் / அதிகமாக"],
+  sel_activity:["மிகவும் சுறுசுறுப்பாக","வாரம் 3-4 முறை","வாரம் 1-2 முறை லேசாக","செயலற்று"],
+  sel_diet:["சமச்சீர் மற்றும் ஆரோக்கியமான","பெரும்பாலும் வீட்டு சமையல்","அடிக்கடி துரித உணவு","மிகவும் ஆரோக்கியமற்ற"],
+  sel_stress:["குறைவு","மிதமான","மத்தியான","அதிக / நீண்டகால"],
+  sel_sleep:["8+","7","6","5","4 அல்லது குறைவு"],
+  sel_family_hx:["யாரும் இல்லை","ஒரு நெருங்கிய உறவினர்","பெற்றோர் இருவரும் / பலர்"],
+  sel_bp_level:["சாதாரணம் (120/80க்கு கீழ்)","சற்று அதிகம் (120-129)","அதிக நிலை 1 (130-139)","அதிக நிலை 2 (140+)"],
+  sel_chol:["சாதாரணம் (200க்கு கீழ்)","எல்லை (200-239)","அதிகம் (240-279)","மிக அதிகம் (280+)"],
+  sel_chest_pain:["எதுவும் இல்லை","லேசான / வழக்கத்திற்கு மாறான","வழக்கமான ஆஞ்சைனா","கடுமையான / நசுக்கும்"],
+  sel_freq3:["எதுவும் இல்லை","எப்போதாவது","அடிக்கடி"],
+  sel_breathless:["எதுவும் இல்லை","கடுமையான உழைப்பில் மட்டும்","மத்தியான உழைப்பில்","ஓய்வில்"],
+  sel_exercise_cp:["இல்லை","லேசான","அடிக்கடி","எப்போதும் நிறுத்த வேண்டும்"],
+  sel_severity4:["எதுவும் இல்லை","லேசான","மத்தியான","கடுமையான"],
+  sel_severity3:["இல்லை","லேசான","முக்கியமான"],
+  sel_sugar:["சாதாரணம் (100க்கு கீழ் உண்ணாவிரதம்)","சற்று அதிகம் (100-125)","ப்ரீ-டயாபெடிக் வரம்பு","மிக அதிகம் (200+)"],
+  sel_freq_urine:["சாதாரணம்","சற்று அதிகரித்தது","கணிசமாக அதிகரித்தது"],
+  sel_thirst:["சாதாரணம்","சற்று தாகம்","எப்போதும் தாகம்"],
+  sel_slow_heal:["இல்லை — சாதாரணமாக ஆறுகிறது","ஆம் — வழக்கத்திற்கு மாறாக மெதுவாக"],
+  sel_jaundice:["எதுவும் இல்லை","லேசான மஞ்சள்","மத்தியான","தெளிவான"],
+  sel_urine_less:["சாதாரணம்","சற்று குறைவு","கவனிக்கத்தக்க குறைவு","மிக குறைவு"],
+  sel_urine_blood:["இல்லை","சிறிது","அடிக்கடி / தெரிகிறது"],
+  sel_urine_foam:["இல்லை","எப்போதாவது","அடிக்கடி"],
+  sel_back_pain:["எதுவும் இல்லை","லேசான","தொடர்ச்சியான / கடுமையான"],
+  sel_cycle:["ஒழுங்கான (28-35 நாட்கள்)","சற்று ஒழுங்கற்ற","மிகவும் ஒழுங்கற்ற","இல்லை"],
+  sel_heavy_period:["சாதாரண ஓட்டம்","கனமான","மிக கனமான / நீடித்த"],
+  sel_acne:["எதுவும் இல்லை","லேசான","மத்தியான / சிஸ்டிக்","கடுமையான"],
+  sel_breast_pain:["எதுவும் இல்லை","லேசான / சுழற்சி","தொடர்ச்சியான / கடுமையான"],
+  sel_urin_diff:["எதுவும் இல்லை — சாதாரணம்","லேசான தயக்கம்","மத்தியான சிரமம்","கடுமையான"],
+  sel_nocturia:["அரிதாக","இரவில் 1-2 முறை","இரவில் 3+ முறை"],
+  sel_erectile:["பிரச்சினை இல்லை","ஆம் — புதியது"],
+  sel_hairloss:["எதுவும் இல்லை","கவனிக்கத்தக்க"],
+ }
+};
+
+// ---- APPLY LANGUAGE TO DOM ----
+
+// Merge UI_DICT into TRANSLATIONS (safe, runs after both are defined)
+(function(){
+  Object.keys(UI_DICT).forEach(function(lang){
+    if(!TRANSLATIONS[lang]) TRANSLATIONS[lang]={};
+    Object.assign(TRANSLATIONS[lang], UI_DICT[lang]);
+  });
+})();
+
+// Update all <select> option text
+function updateSelectOptions(){
+  document.querySelectorAll('[data-i18n-sel]').forEach(function(sel){
+    var key = sel.getAttribute('data-i18n-sel');
+    var opts = (TRANSLATIONS[CURRENT_LANG]&&TRANSLATIONS[CURRENT_LANG][key]) || TRANSLATIONS.en[key];
+    if(!opts||!Array.isArray(opts)) return;
+    var cur = sel.value;
+    Array.from(sel.options).forEach(function(opt, i){
+      if(opts[i] !== undefined) opt.text = opts[i];
+    });
+    sel.value = cur;
+  });
+}
+
+// Update hero chips (disease names)
+var CHIP_KEYS_EN = ['Breast Cancer','Heart Disease','Diabetes','PCOS','Liver Disease','Kidney Disease','Prostate Cancer','Thyroid Disease','Lung Disease'];
+var CHIP_KEYS = {
+  en:['Breast Cancer','Heart Disease','Diabetes','PCOS','Liver Disease','Kidney Disease','Prostate Cancer','Thyroid Disease','Lung Disease'],
+  hi:['स्तन कैंसर','हृदय रोग','मधुमेह','पीसीओएस','यकृत रोग','गुर्दे की बीमारी','प्रोस्टेट कैंसर','थायरॉइड रोग','फेफड़े की बीमारी'],
+  kn:['ಸ್ತನ ಕ್ಯಾನ್ಸರ್','ಹೃದ್ರೋಗ','ಮಧುಮೇಹ','ಪಿಸಿಒಎಸ್','ಯಕೃತ್ತಿನ ರೋಗ','ಮೂತ್ರಪಿಂಡ ರೋಗ','ಪ್ರಾಸ್ಟೇಟ್ ಕ್ಯಾನ್ಸರ್','ಥೈರಾಯ್ಡ್ ರೋಗ','ಶ್ವಾಸಕೋಶ ರೋಗ'],
+  te:['స్తన క్యాన్సర్','హృదయ వ్యాధి','మధుమేహం','పిసిఓఎస్','కాలేయ వ్యాధి','మూత్రపిండ వ్యాధి','ప్రోస్టేట్ క్యాన్సర్','థైరాయిడ్ వ్యాధి','ఊపిరితిత్తుల వ్యాధి'],
+  ta:['மார்பக புற்றுநோய்','இதய நோய்','நீரிழிவு','பிசிஓஎஸ்','கல்லீரல் நோய்','சிறுநீரக நோய்','புரோஸ்டேட் புற்றுநோய்','தைராய்டு நோய்','நுரையீரல் நோய்']
+};
+function updateHeroChips(){
+  var chips = document.querySelectorAll('.hero-chip');
+  var names = CHIP_KEYS[CURRENT_LANG] || CHIP_KEYS.en;
+  chips.forEach(function(chip, i){
+    if(names[i]) chip.innerHTML = '&#10003; ' + names[i];
+  });
+}
+
+// Main apply function
+function applyLang(){
+  // data-i18n elements (skip tab buttons - handled separately to preserve dot span)
+  document.querySelectorAll('[data-i18n]:not(.tb)').forEach(function(el){
+    var key = el.getAttribute('data-i18n');
+    var val = t(key);
+    if(val) el.innerHTML = val;
+  });
+  // Select options
+  updateSelectOptions();
+  // Hero disease chips
+  updateHeroChips();
+  // Tab buttons - update text while preserving the dot indicator span
+  document.querySelectorAll('.tb[data-i18n]').forEach(function(btn){
+    var key = btn.getAttribute('data-i18n');
+    var val = t(key);
+    if(val){
+      btn.innerHTML = '<span class="td"></span>' + val;
+    }
+  });
+  // Chat UI
+  var ch = document.getElementById('chatHeaderName');
+  if(ch) ch.textContent = t('chat_header');
+  var co = document.getElementById('chatOnlineStatus');
+  if(co) co.textContent = t('chat_online');
+  var ci = document.getElementById('chatInput');
+  if(ci) ci.placeholder = t('chat_placeholder');
+  // PDF button
+  var pb = document.querySelector('.report-btn');
+  if(pb) pb.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg> ' + t('btn_pdf');
+  // Active lang button
+  document.querySelectorAll('.lang-btn').forEach(function(b){
+    b.classList.toggle('active', b.getAttribute('data-lang') === CURRENT_LANG);
+  });
+}
+
+function setLang(lang){
+  CURRENT_LANG = lang;
+  applyLang();
+  // Re-render result cards in new language
+  if(typeof lastData !== 'undefined' && lastData){ renderResults(lastData); }
+  // Reset chat so greeting re-appears in new language
+  if(typeof chatInitialized!=='undefined' && chatInitialized){
+    chatInitialized = false;
+    document.getElementById('chatMsgs').innerHTML = '';
+    if(typeof chatOpen!=='undefined' && chatOpen){ initChat(); }
+  }
+}
+
+function showDiseaseQuickReplies(){
+  if(allPredictedDiseases && allPredictedDiseases.length){
+    var qReplies = allPredictedDiseases.map(function(r){
+      for(var k in REMEDIES){ if(r.name.toLowerCase().indexOf(k)!==-1) return t('qr_'+k); }
+      return r.name;
+    });
+    qReplies.push(t('qr_book'));
+    showQuickReplies(qReplies.slice(0,5));
+  }
+}
+
+// ========================== CHATBOT ==========================
+var chatOpen = false;
+var chatInitialized = false;
+var currentDisease = null;
+var allPredictedDiseases = [];
+var WHATSAPP_NUMBER = '917989291123';
+
+// ---- DISEASE KEYWORD MAP (all variants, case-insensitive) ----
+var DISEASE_KEYS = {
+  heart:    ['heart','cardiac','cardio','cardiovascular','coronary','chest pain','angina','hypertension','bp','blood pressure','artery','arteries','stroke','ecg','ekg','palpitation','tachycardia'],
+  diabetes: ['diabetes','diabetic','sugar','glucose','insulin','type 1','type 2','type1','type2','hyperglycemia','hypoglycemia','blood sugar','glycemic','hba1c','a1c'],
+  liver:    ['liver','hepatic','hepatitis','cirrhosis','jaundice','bilirubin','fatty liver','nafld','bile','gallbladder','sgot','sgpt','alt','ast'],
+  kidney:   ['kidney','renal','nephro','nephrotic','creatinine','urea','dialysis','urinary','uti','glomerular','proteinuria','ckd'],
+  breast:   ['breast','mammogram','mammography','mastectomy','lumpectomy','biopsy breast','brca'],
+  thyroid:  ['thyroid','hypothyroid','hyperthyroid','tsh','thyroxine','t3','t4','goiter','hashimoto','graves'],
+  pcos:     ['pcos','pcod','polycystic','ovary','ovarian','hormonal','irregular period','irregular cycle','androgen','lh','fsh','testosterone','prolactin','amenorrhea','infertility'],
+  prostate: ['prostate','prostatic','psa','urination difficulty','bph','benign prostatic'],
+  lung:     ['lung','pulmonary','respiratory','bronchial','bronchitis','pneumonia','copd','asthma','oxygen','spo2','xray','x-ray','chest','cough','wheeze','dyspnea']
+};
+
+// ---- FULL REMEDY DATABASE ----
+var REMEDIES = {
+  heart: {
+    icon:'❤️', name:'Heart Disease',
+    remedies:'• <strong>Mediterranean diet</strong> — olive oil, fish (salmon/mackerel), leafy greens, nuts<br>• Walk or cycle <strong>30 min daily</strong>; avoid sitting >2 hrs at a stretch<br>• Quit smoking & limit alcohol to ≤1 drink/day<br>• Reduce salt intake to <5g/day to manage blood pressure<br>• Practice deep breathing or meditation to lower stress cortisol',
+    diet:'• <strong>Eat:</strong> Oats, barley, berries, avocado, walnuts, flaxseeds, garlic, tomatoes<br>• <strong>Avoid:</strong> Trans fats, red meat, fried foods, excess salt, processed snacks<br>• Include omega-3 supplements (fish oil) if diet is lacking',
+    exercise:'• <strong>Cardio:</strong> Brisk walking, swimming, cycling — 30 min, 5 days/week<br>• <strong>Strength:</strong> Light resistance training 2x/week<br>• Avoid sudden intense exertion — warm up always<br>• Target heart rate: 50–70% of max during moderate exercise',
+    severe:'• Sudden chest pain or tightness<br>• Pain radiating to arm, jaw, neck<br>• Shortness of breath at rest<br>• Irregular heartbeat or fainting<br>• Excessive sweating with dizziness',
+    quick:['Heart Remedies','Heart Diet','Heart Exercise','Severe Signs','Book Appointment']
+  },
+  diabetes: {
+    icon:'🩸', name:'Diabetes',
+    remedies:'• Follow a <strong>low-GI diet</strong> — brown rice, whole wheat, lentils over white rice/bread<br>• Exercise <strong>30 min daily</strong> — improves insulin sensitivity by up to 40%<br>• Monitor blood sugar regularly; keep fasting glucose <100 mg/dL<br>• Stay hydrated — drink 8–10 glasses of water daily<br>• Manage weight — even 5–7% weight loss reduces diabetes risk significantly',
+    diet:'• <strong>Eat:</strong> Methi (fenugreek), bitter gourd (karela), amla, cinnamon, barley, legumes<br>• <strong>Avoid:</strong> White rice, refined flour, sugary drinks, sweets, fruit juices<br>• Eat 5–6 small meals; never skip breakfast<br>• Pair carbs with protein to slow glucose absorption',
+    exercise:'• Brisk walking or yoga <strong>30–45 min daily</strong><br>• Resistance training (squats, lunges) 2–3x/week — builds glucose-absorbing muscle<br>• Post-meal walks (10–15 min) lower blood sugar spikes<br>• Avoid exercising on empty stomach if on medication',
+    severe:'• Blood sugar >300 mg/dL consistently<br>• Fruity breath smell (diabetic ketoacidosis)<br>• Confusion, extreme fatigue, vomiting<br>• Foot wounds that do not heal<br>• Blurred vision or numbness in limbs',
+    quick:['Diabetes Remedies','Diabetes Diet','Diabetes Exercise','Severe Signs','Book Appointment']
+  },
+  liver: {
+    icon:'🟤', name:'Liver Disease',
+    remedies:'• <strong>Zero alcohol</strong> — even small amounts worsen liver inflammation<br>• Drink warm water with lemon each morning to stimulate bile flow<br>• Turmeric (curcumin) has proven hepatoprotective effects — add to food daily<br>• Maintain healthy weight — fatty liver improves significantly with 7–10% weight loss<br>• Avoid self-medication — paracetamol overdose is a top liver damage cause',
+    diet:'• <strong>Eat:</strong> Leafy greens, garlic, beets, carrots, green tea, grapefruit, olive oil, walnuts<br>• <strong>Avoid:</strong> Alcohol, high-fat/fried foods, processed meats, refined sugar, raw shellfish<br>• Coffee (2 cups/day black) has shown liver-protective effects in studies',
+    exercise:'• Low-impact cardio: walking, yoga, swimming — 30 min, 5x/week<br>• Avoid strenuous exercise during active liver inflammation<br>• Gradual weight loss through exercise is highly beneficial for fatty liver<br>• Stretching and pranayama improve circulation to liver',
+    severe:'• Yellowing of skin or eyes (jaundice)<br>• Severe abdominal pain or swelling<br>• Very dark urine / pale stools<br>• Blood in vomit or stools<br>• Mental confusion (hepatic encephalopathy)',
+    quick:['Liver Remedies','Liver Diet','Liver Exercise','Severe Signs','Book Appointment']
+  },
+  kidney: {
+    icon:'🫘', name:'Kidney Disease',
+    remedies:'• Drink <strong>2.5–3 litres of water daily</strong> — flushes waste and prevents stones<br>• Strictly control blood pressure (<130/80) and blood sugar if diabetic<br>• Reduce protein intake if creatinine is elevated (consult doctor first)<br>• Avoid NSAIDs (ibuprofen, naproxen) — they reduce kidney blood flow<br>• Cranberry juice (unsweetened) helps prevent UTIs that can damage kidneys',
+    diet:'• <strong>Eat:</strong> Cauliflower, cabbage, apple, red grapes, egg whites, olive oil, blueberries<br>• <strong>Avoid:</strong> Excess salt, potassium-rich foods (bananas, potatoes), phosphorus (dairy, nuts) if CKD<br>• Track daily fluid intake if advised by nephrologist',
+    exercise:'• Walking, cycling or water aerobics 30 min, 5x/week<br>• Avoid heavy weightlifting which raises creatinine temporarily<br>• Yoga poses (gentle) improve kidney circulation<br>• Exercise helps control BP and blood sugar — key kidney protectors',
+    severe:'• Sudden swelling of hands, feet, face<br>• Severe decrease in urine output<br>• Frothy or blood-tinged urine<br>• Extreme fatigue with nausea/vomiting<br>• Severe lower back or flank pain',
+    quick:['Kidney Remedies','Kidney Diet','Kidney Exercise','Severe Signs','Book Appointment']
+  },
+  breast: {
+    icon:'🎗️', name:'Breast Cancer',
+    remedies:'• Maintain <strong>healthy BMI</strong> (18.5–24.9) — obesity increases estrogen levels<br>• Do <strong>monthly self-breast exams</strong> — detect lumps early when treatable<br>• Limit alcohol to <1 drink/day; avoid smoking completely<br>• Breastfeeding for 1+ years lowers risk by reducing hormone exposure<br>• Vitamin D adequate levels linked to lower breast cancer incidence',
+    diet:'• <strong>Eat:</strong> Cruciferous vegetables (broccoli, cauliflower), berries, flaxseeds, turmeric, green tea, pomegranate<br>• <strong>Avoid:</strong> Processed meats, alcohol, high-fat dairy, refined sugars<br>• Soy in whole food form (tofu, edamame) is safe and may be protective<br>• Fibre-rich diet helps regulate estrogen levels',
+    exercise:'• 150–300 min/week moderate-intensity aerobic activity<br>• Strength training 2x/week<br>• Exercise reduces breast cancer risk by 20–40% in research<br>• Yoga improves quality of life during and after treatment',
+    severe:'• New lump or thickening in breast or underarm<br>• Nipple discharge (especially bloody)<br>• Nipple inversion or skin changes<br>• Persistent breast pain in one area<br>• Swelling of part of the breast',
+    quick:['Breast Cancer Remedies','Breast Diet','Breast Exercise','Warning Signs','Book Appointment']
+  },
+  thyroid: {
+    icon:'🦋', name:'Thyroid Disease',
+    remedies:'• Eat <strong>selenium-rich foods</strong> — Brazil nuts (2/day), tuna, sunflower seeds<br>• Ensure <strong>adequate iodine</strong> — use iodised salt, eat seaweed occasionally<br>• Manage stress — cortisol directly disrupts thyroid hormone production<br>• Avoid excessive raw cruciferous vegetables (broccoli, cabbage) if hypothyroid<br>• Get TSH tested every 6 months if family history exists',
+    diet:'• <strong>Eat:</strong> Seaweed, fish, eggs, dairy (if tolerated), Brazil nuts, pumpkin seeds, legumes<br>• <strong>Avoid:</strong> Highly processed soy, gluten (if Hashimoto\'s), fluoridated water, excess alcohol<br>• Anti-inflammatory diet (Mediterranean) supports thyroid health',
+    exercise:'• Yoga — especially shoulder stand and fish pose stimulate thyroid gland<br>• Walking 30 min daily improves metabolism in hypothyroidism<br>• Avoid over-exercising if hyperthyroid (already elevated heart rate)<br>• Strength training helps counteract weight gain from hypothyroidism',
+    severe:'• Heart racing or pounding (hyperthyroid)<br>• Unexplained rapid weight gain/loss<br>• Severe cold intolerance or feeling always hot<br>• Thyroid swelling / visible goiter<br>• Depression, brain fog, extreme fatigue that worsens',
+    quick:['Thyroid Remedies','Thyroid Diet','Thyroid Exercise','Severe Signs','Book Appointment']
+  },
+  pcos: {
+    icon:'🌸', name:'PCOS',
+    remedies:'• Follow a <strong>low glycemic index (GI) diet</strong> — stabilises insulin which drives PCOS<br>• Exercise <strong>at least 150 min/week</strong> — lowers androgens and improves menstrual regularity<br>• Spearmint tea (2 cups/day) shown to reduce testosterone levels naturally<br>• Manage stress — cortisol worsens hormonal imbalance<br>• Maintain healthy weight — 5–10% loss significantly restores ovulation',
+    diet:'• <strong>Eat:</strong> Whole grains, legumes, leafy greens, berries, fatty fish, cinnamon, flaxseeds, walnuts<br>• <strong>Avoid:</strong> Refined carbs, white sugar, dairy (in some cases), processed foods, caffeine excess<br>• Inositol (found in legumes, nuts) is a natural supplement well-studied for PCOS',
+    exercise:'• HIIT (3x/week) — most effective at improving insulin sensitivity in PCOS<br>• Yoga reduces cortisol and improves hormonal balance<br>• Avoid extreme cardio — excessive exercise raises cortisol and worsens PCOS<br>• Combination of strength + cardio is ideal',
+    severe:'• Periods absent for 3+ months (not pregnancy)<br>• Severe pelvic pain<br>• Sudden weight gain without dietary change<br>• Excessive hair growth on face/body (hirsutism)<br>• Infertility after 12 months of trying',
+    quick:['PCOS Remedies','PCOS Diet','PCOS Exercise','Severe Signs','Book Appointment']
+  },
+  prostate: {
+    icon:'🔵', name:'Prostate Cancer',
+    remedies:'• Eat <strong>lycopene-rich foods</strong> daily — cooked tomatoes, watermelon, pink guava<br>• Get regular <strong>PSA screening</strong> after age 40 especially with family history<br>• Green tea (3–4 cups/day) contains EGCG — studied for anti-prostate cancer effects<br>• Maintain healthy weight — obesity linked to aggressive prostate cancer<br>• Limit red meat and high-fat dairy which raise IGF-1 (growth factor for cancer)',
+    diet:'• <strong>Eat:</strong> Cooked tomatoes, pomegranate juice, green tea, soy (tofu), broccoli, fish, turmeric<br>• <strong>Avoid:</strong> Red/processed meat, high-fat dairy, saturated fats, excess calcium supplements<br>• Cruciferous vegetables (broccoli, cauliflower) contain sulforaphane — anti-cancer compound',
+    exercise:'• 30 min brisk walking or swimming daily<br>• Strength training 2–3x/week — reduces PSA levels in some studies<br>• Kegel exercises maintain urinary control (especially post-treatment)<br>• Exercise reduces prostate cancer mortality risk by ~30%',
+    severe:'• Difficulty starting or stopping urination<br>• Blood in urine or semen<br>• Bone pain (especially hip/back) — possible metastasis<br>• Unexplained weight loss<br>• Erectile dysfunction combined with urinary symptoms',
+    quick:['Prostate Remedies','Prostate Diet','Prostate Exercise','Severe Signs','Book Appointment']
+  },
+  lung: {
+    icon:'🫁', name:'Lung Disease',
+    remedies:'• <strong>Quit smoking immediately</strong> — lung function starts recovering in 2 weeks after stopping<br>• Deep breathing exercises (pranayama) 10 min daily expand lung capacity<br>• Avoid air pollution, indoor dust, chemical fumes, and second-hand smoke<br>• Steam inhalation with eucalyptus oil loosens mucus and relieves congestion<br>• Tulsi (holy basil) tea has bronchodilator properties — drink 2x daily',
+    diet:'• <strong>Eat:</strong> Apples, tomatoes, ginger, turmeric, garlic, green leafy vegetables, omega-3 rich fish<br>• <strong>Avoid:</strong> Processed meats (linked to COPD), cured meats, excess dairy if causing mucus<br>• Anti-inflammatory foods reduce airway inflammation<br>• Stay well hydrated to thin mucus secretions',
+    exercise:'• Pursed-lip breathing: inhale 2 sec, exhale 4 sec — improves gas exchange<br>• Walking or swimming — gentlest on lungs<br>• Avoid exercising in high pollution or cold air without a mask<br>• Pulmonary rehab programs (for COPD/asthma) significantly improve quality of life',
+    severe:'• Sudden severe shortness of breath at rest<br>• Blue-tinted lips or fingernails (cyanosis)<br>• Coughing up blood<br>• Chest pain that worsens when breathing<br>• SpO2 below 94% consistently',
+    quick:['Lung Remedies','Lung Diet','Lung Exercise','Severe Signs','Book Appointment']
+  }
+};
+
+// ---- DETECT DISEASE FROM FREE TEXT ----
+function detectDiseaseFromText(txt) {
+  var t = txt.toLowerCase();
+  for (var key in DISEASE_KEYS) {
+    var keywords = DISEASE_KEYS[key];
+    for (var i = 0; i < keywords.length; i++) {
+      if (t.indexOf(keywords[i]) !== -1) return key;
+    }
+  }
+  return null;
+}
+
+// ---- DETECT TOPIC (remedy/diet/exercise/severe) FROM TEXT ----
+function detectTopic(txt) {
+  var t = txt.toLowerCase();
+  // English + Hindi + Kannada + Telugu + Tamil keywords for each topic
+  if (/remedy|remedies|cure|treatment|help|reduce|manage|control|natural|home remedy|suggestion|उपाय|इलाज|नुस्खे|ಪರಿಹಾರ|ಉಪಾಯ|పరిష్కారం|తీర్చు|தீர்வு|மருந்து/.test(t)) return 'remedies';
+  if (/diet|food|eat|meal|nutrition|avoid|consume|drink|आहार|खाना|खाएं|भोजन|ಆಹಾರ|ತಿನ್ನು|ఆహారం|తినండి|உணவு|சாப்பிடு/.test(t)) return 'diet';
+  if (/exercise|workout|gym|yoga|walk|fitness|sport|व्यायाम|योग|ವ್ಯಾಯಾಮ|ಯೋಗ|వ్యాయామం|యోగ|உடற்பயிற்சி|யோகா/.test(t)) return 'exercise';
+  if (/severe|emergency|urgent|dangerous|warning|symptom|sign|गंभीर|खतरा|ಗಂಭೀರ|ಎಚ್ಚರಿಕೆ|తీవ్రమైన|హెచ్చరిక|கடுமையான|எச்சரிக்கை/.test(t)) return 'severe';
+  if (/book|appoint|doctor|visit|consult|hospital|clinic|अपॉइंटमेंट|डॉक्टर|ಅಪಾಯಿಂಟ್|ವೈದ್ಯ|అపాయింట్|వైద్యుడు|சந்திப்பு|மருத்துவர்/.test(t)) return 'book';
+  return null;
+}
+
+function toggleChat(){
+  chatOpen = !chatOpen;
+  document.getElementById('chatWindow').classList.toggle('open', chatOpen);
+  document.getElementById('chatBadge').classList.remove('show');
+  if(chatOpen && !chatInitialized){ initChat(); }
+}
+
+function initChat(){
+  chatInitialized = true;
+  if(typeof lastData !== 'undefined' && lastData && lastData.results && lastData.results.length){
+    allPredictedDiseases = lastData.results.slice().sort(function(a,b){return b.risk-a.risk;});
+    var top = allPredictedDiseases[0];
+    currentDisease = top.name;
+    var dList = allPredictedDiseases.map(function(r){
+      return '<strong>'+getLocalDiseaseName(r.name)+'</strong> ('+r.risk+'%)';
+    }).join(', ');
+    setTimeout(function(){
+      var greet = t('chat_greeting_results').replace('{list}',dList).replace('{top}',getLocalDiseaseName(top.name));
+      addBotMsg(greet);
+      var qReplies = allPredictedDiseases.map(function(r){
+        for(var k in REMEDIES){ if(r.name.toLowerCase().indexOf(k)!==-1) return t('qr_'+k); }
+        return r.name;
+      });
+      qReplies.push(t('qr_book'));
+      showQuickReplies(qReplies.slice(0,5));
+    }, 400);
+  } else {
+    addBotMsg(t('chat_greeting_empty'));
+    showQuickReplies([t('qr_heart'),t('qr_diabetes'),t('qr_liver'),t('qr_pcos'),t('qr_lung')]);
+  }
+}
+
+function addBotMsg(html, showBook){
+  var msgs = document.getElementById('chatMsgs');
+  var div = document.createElement('div');
+  div.className = 'msg bot';
+  div.innerHTML = '<div class="msg-avatar">🤖</div><div class="msg-bubble">' + html +
+    (showBook ? '<br><br><button class="book-appt-btn" onclick="bookWhatsApp()">📲 Book Appointment via WhatsApp</button>' : '') +
+    '</div>';
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function addUserMsg(txt){
+  var msgs = document.getElementById('chatMsgs');
+  var div = document.createElement('div');
+  div.className = 'msg user';
+  div.innerHTML = '<div class="msg-bubble">'+txt+'</div><div class="msg-avatar" style="background:linear-gradient(135deg,#f43f8e,#7c3aed)">👤</div>';
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function addTyping(){
+  var msgs = document.getElementById('chatMsgs');
+  var div = document.createElement('div');
+  div.className = 'msg bot typing-indicator';
+  div.innerHTML = '<div class="msg-avatar">🤖</div><div class="msg-bubble" style="padding:.3rem .6rem"><div class="typing-dots"><span></span><span></span><span></span></div></div>';
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  return div;
+}
+function removeTyping(el){ if(el && el.parentNode) el.parentNode.removeChild(el); }
+
+function showQuickReplies(arr){
+  var qk = document.getElementById('chatQuick');
+  qk.innerHTML = '';
+  arr.forEach(function(t){
+    var b = document.createElement('button');
+    b.className = 'quick-btn';
+    b.textContent = t;
+    b.onclick = function(){ handleQuick(t); };
+    qk.appendChild(b);
+  });
+}
+function clearQuickReplies(){ document.getElementById('chatQuick').innerHTML=''; }
+
+function handleQuick(txt){ clearQuickReplies(); addUserMsg(txt); processMessage(txt); }
+
+function sendChatMsg(){
+  var inp = document.getElementById('chatInput');
+  var txt = inp.value.trim();
+  if(!txt) return;
+  inp.value = '';
+  addUserMsg(txt);
+  processMessage(txt);
+}
+
+// ---- MAIN RESPONSE ENGINE ----
+function processMessage(txt){
+  var typing = addTyping();
+  setTimeout(function(){
+    removeTyping(typing);
+    var response = buildResponse(txt);
+    addBotMsg(response.html, response.showBook);
+    showQuickReplies(response.quick);
+  }, 900);
+}
+
+function buildResponse(txt){
+  var tl = txt.toLowerCase(); // local lowercase (tl) - does NOT shadow global t() translation fn
+
+  // 1) Detect disease from text (typed keyword or quick reply)
+  var diseaseKey = detectDiseaseFromText(tl);
+
+  // Also try matching quick reply pattern like "Heart Remedies" -> "heart"
+  if(!diseaseKey){
+    for(var k in REMEDIES){
+      if(tl.indexOf(REMEDIES[k].name.toLowerCase()) !== -1 || tl.indexOf(k) !== -1){ diseaseKey = k; break; }
+    }
+  }
+  // Match translated disease names typed by user
+  if(!diseaseKey){
+    var rems = REMEDY_TRANSLATIONS[CURRENT_LANG] || REMEDY_TRANSLATIONS.en;
+    for(var k in rems){
+      if(tl.indexOf(rems[k].name.toLowerCase()) !== -1){ diseaseKey = k; break; }
+    }
+  }
+
+  // Fallback to currentDisease if no disease keyword found
+  if(!diseaseKey && currentDisease){
+    for(var k in REMEDIES){
+      if(currentDisease.toLowerCase().indexOf(k) !== -1){ diseaseKey = k; break; }
+    }
+  }
+
+  var topic = detectTopic(tl);
+
+  // Booking
+  if(topic === 'book' || tl.indexOf('whatsapp') !== -1){
+    return {
+      html: t('chat_book_msg'),
+      showBook: true,
+      quick: [t('qr_heart'),t('qr_diabetes'),t('qr_thyroid'),t('qr_book')]
+    };
+  }
+
+  // If we have a disease
+  if(diseaseKey && REMEDIES[diseaseKey]){
+    var R = getRemedies(diseaseKey);
+    var isSevere = (typeof lastData !== 'undefined' && lastData && lastData.overall >= 65);
+    var html = '';
+    if(topic === 'diet'){
+      html = R.icon+' <strong>'+R.name+'</strong> — '+t('label_diet')+'<br>'+R.diet;
+    } else if(topic === 'exercise'){
+      html = R.icon+' <strong>'+R.name+'</strong> — '+t('label_exercise')+'<br>'+R.exercise;
+    } else if(topic === 'severe'){
+      html = '🚨 <strong>'+R.name+' — '+t('label_warning')+'</strong><br>'+R.severe;
+      return { html: html, showBook: true, quick: [t('qr_book'),t('qr_diet'),t('qr_exercise')] };
+    } else {
+      html = R.icon+' <strong>'+R.name+' — '+t('label_remedies')+'</strong><br>'+R.remedies;
+      if(isSevere) html += '<br><br>⚠️ <em>'+t('label_high_risk')+'</em>';
+    }
+    return { html: html, showBook: isSevere, quick: [t('qr_diet'),t('qr_exercise'),t('qr_severe'),t('qr_book')] };
+  }
+
+  // General fallback
+  return {
+    html: '🤖 '+t('chat_fallback'),
+    showBook: false,
+    quick: [t('qr_heart'),t('qr_diabetes'),t('qr_pcos'),t('qr_kidney'),t('qr_lung')]
+  };
+}
+
+function bookWhatsApp(){
+  var disease = currentDisease || 'health concern';
+  var patientName = (typeof lastData !== 'undefined' && lastData && lastData.patient) ? lastData.patient : 'Patient';
+  var risk = (typeof lastData !== 'undefined' && lastData) ? ' | Risk: '+lastData.overall+'%' : '';
+  var waMsg = t('wa_greeting').replace('{name}',patientName).replace('{disease}',disease).replace('{risk}',risk);
+  window.open('https://wa.me/'+WHATSAPP_NUMBER+'?text='+encodeURIComponent(waMsg), '_blank');
+}
+
+// Show badge on page load
+setTimeout(function(){ document.getElementById('chatBadge').classList.add('show'); }, 3000);
+// Apply default language on load
+applyLang();
+
+// Auto-open chat after prediction with a slight delay
+var _origRender = typeof renderResults === 'function' ? renderResults : null;
+if(_origRender){
+  renderResults = function(data){
+    _origRender(data);
+    // Reset chat so it re-greets with new results
+    chatInitialized = false;
+    document.getElementById('chatMsgs').innerHTML = '';
+    document.getElementById('chatQuick').innerHTML = '';
+    // Auto open after 1.5s
+    setTimeout(function(){
+      if(!chatOpen){ toggleChat(); }
+      else { initChat(); }
+    }, 1500);
+  };
+}
+</script>
+
+<script>
+// ==================== LOADING SCREEN JS ====================
+(function(){
+  var messages = [
+    "Loading ML models for accurate prediction...",
+    "Initializing disease risk engine...",
+    "Calibrating Heart Disease model...",
+    "Calibrating Diabetes model...",
+    "Calibrating Liver & Kidney models...",
+    "Calibrating Thyroid & PCOS models...",
+    "Setting up Lung X-Ray analyzer...",
+    "Preparing multi-language support...",
+    "Warming up AI health assistant...",
+    "Almost ready — your health dashboard is loading..."
+  ];
+
+  var msgEl   = document.getElementById('lmsg');
+  var barEl   = document.getElementById('loaderBar');
+  var pctEl   = document.getElementById('loaderPct');
+  var loader  = document.getElementById('aarogya-loader');
+
+  var idx = 0;
+  var pct = 0;
+  var total = messages.length;
+
+  function nextMsg(){
+    // exit current
+    msgEl.classList.remove('active');
+    msgEl.classList.add('exit');
+    setTimeout(function(){
+      idx = (idx + 1) % total;
+      msgEl.textContent = messages[idx];
+      msgEl.classList.remove('exit');
+      msgEl.classList.add('enter');
+      setTimeout(function(){
+        msgEl.classList.remove('enter');
+        msgEl.classList.add('active');
+      }, 50);
+    }, 400);
+
+    // progress
+    pct = Math.min(pct + Math.floor(100 / total) + Math.floor(Math.random()*4), 99);
+    barEl.style.width = pct + '%';
+    pctEl.textContent = pct + '%';
+  }
+
+  // cycle messages every 800ms
+  var msgInterval = setInterval(nextMsg, 800);
+
+  // hide loader when page fully loaded
+  window.addEventListener('load', function(){
+    clearInterval(msgInterval);
+    // fill to 100
+    barEl.style.width = '100%';
+    pctEl.textContent = '100%';
+    msgEl.classList.remove('active','exit','enter');
+    msgEl.classList.add('active');
+    msgEl.textContent = '✓ Ready! Welcome to AAROGYA AI';
+    barEl.style.background = 'linear-gradient(90deg,#10b981,#00d4ff)';
+    setTimeout(function(){
+      loader.classList.add('hide');
+    }, 700);
+  });
+
+  // failsafe — hide after 8s no matter what
+  setTimeout(function(){
+    loader.classList.add('hide');
+  }, 8000);
+})();
+// ==================== END LOADING SCREEN JS ====================
+</script>
+</body>
+</html>

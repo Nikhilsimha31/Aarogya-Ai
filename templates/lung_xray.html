@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<title>Lung X-Ray Analyser — AAROGYA AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tensorflow/3.21.0/tf.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#030810;--surface:#081224;--card:#0c1830;--border:#162840;--border2:#1e3a5c;
+  --accent:#00d4ff;--accent2:#7c3aed;--accent3:#00ff9d;--pink:#f43f8e;--blue:#3b82f6;
+  --green:#10b981;--yellow:#f59e0b;--red:#ef4444;
+  --text:#e2eeff;--text2:#7a9bbf;--muted:#3d5a7a;
+  --fd:'Outfit',sans-serif;--fb:'Space Grotesk',sans-serif;
+  --sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px);
+}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--text);font-family:var(--fb);min-height:100vh;
+  overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+body::before{content:'';position:fixed;inset:0;z-index:0;
+  background:radial-gradient(ellipse 70% 40% at 15% 5%,rgba(0,212,255,.06) 0%,transparent 55%),
+    radial-gradient(ellipse 50% 35% at 85% 90%,rgba(124,58,237,.06) 0%,transparent 55%),
+    linear-gradient(rgba(0,212,255,.018) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,212,255,.018) 1px,transparent 1px);
+  background-size:100% 100%,100% 100%,44px 44px,44px 44px;pointer-events:none}
+
+/* HEADER */
+header{position:sticky;top:0;z-index:200;height:58px;display:flex;align-items:center;
+  padding:0 1.2rem;padding-top:var(--sat);
+  background:rgba(3,8,16,.95);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border-bottom:1px solid rgba(0,212,255,.12)}
+.logo-wrap{display:flex;align-items:center;gap:.7rem;flex:1;min-width:0;overflow:hidden}
+.logo-icon{width:36px;height:36px;border-radius:9px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:grid;place-items:center;font-size:1.1rem;box-shadow:0 0 16px rgba(0,212,255,.3)}
+.logo-name{font-family:var(--fd);font-size:1.05rem;font-weight:900;white-space:nowrap;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.logo-sub{font-size:.58rem;color:var(--muted);white-space:nowrap}
+.back-btn{display:inline-flex;align-items:center;gap:.4rem;padding:.44rem 1rem;flex-shrink:0;
+  background:rgba(0,212,255,.08);border:1px solid rgba(0,212,255,.22);border-radius:9px;
+  font-family:var(--fd);font-size:.75rem;font-weight:700;color:var(--accent);
+  cursor:pointer;text-decoration:none;transition:all .2s;white-space:nowrap;touch-action:manipulation}
+.back-btn:active{background:rgba(0,212,255,.2)}
+
+/* LAYOUT */
+.wrap{position:relative;z-index:5;max-width:780px;margin:0 auto;
+  padding:1.5rem 1rem calc(2.5rem + var(--sab))}
+
+/* HERO */
+.hero{text-align:center;padding:1.8rem .5rem 1.4rem}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:.45rem;
+  background:linear-gradient(90deg,rgba(0,212,255,.1),rgba(124,58,237,.1));
+  border:1px solid rgba(0,212,255,.2);padding:4px 14px;border-radius:999px;
+  font-size:.68rem;font-weight:700;color:var(--accent);letter-spacing:.1em;
+  text-transform:uppercase;margin-bottom:1rem}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--accent3);
+  animation:blink 1.6s ease infinite;flex-shrink:0}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+.hero h1{font-family:var(--fd);font-size:clamp(1.65rem,5vw,2.8rem);font-weight:900;
+  line-height:1.08;letter-spacing:-.03em;margin-bottom:.8rem}
+.hl{background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 50%,var(--pink) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{color:var(--text2);font-size:.87rem;max-width:480px;margin:0 auto;line-height:1.6}
+
+/* MODEL STATUS */
+.model-status-bar{display:flex;align-items:center;gap:.7rem;
+  background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  padding:.72rem 1.1rem;margin-bottom:1.4rem;font-size:.77rem}
+.ms-dot{width:9px;height:9px;border-radius:50%;background:var(--yellow);flex-shrink:0;
+  animation:blink 1.2s ease infinite}
+.ms-dot.ready{background:var(--green);animation:none}
+.ms-dot.error{background:var(--red);animation:none}
+.ms-text{color:var(--text2);flex:1;min-width:0}
+.ms-text strong{color:var(--text)}
+.ms-prog{font-size:.7rem;color:var(--muted);font-family:monospace;flex-shrink:0}
+
+/* MODE TABS */
+.mode-tabs{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:1.2rem}
+.mode-tab{padding:.72rem .5rem;border-radius:12px;border:1px solid var(--border);
+  background:var(--surface);text-align:center;cursor:pointer;transition:all .2s;
+  font-family:var(--fd);font-size:.82rem;font-weight:700;color:var(--muted);
+  touch-action:manipulation;-webkit-user-select:none;user-select:none;line-height:1.3}
+.mode-tab .mt-icon{font-size:1.35rem;display:block;margin-bottom:.25rem}
+.mode-tab.active{background:linear-gradient(135deg,rgba(0,212,255,.12),rgba(124,58,237,.08));
+  border-color:rgba(0,212,255,.35);color:var(--accent)}
+.mode-tab:active{transform:scale(.96)}
+
+/* UPLOAD ZONE */
+.upload-zone{border:2px dashed var(--border2);border-radius:18px;
+  padding:2.6rem 1.5rem;text-align:center;cursor:pointer;
+  transition:all .3s ease;background:var(--card);position:relative;overflow:hidden}
+.upload-zone::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at 50% 50%,rgba(0,212,255,.05) 0%,transparent 65%);
+  opacity:0;transition:opacity .3s}
+.upload-zone:hover,.upload-zone.dragover{border-color:var(--accent);
+  box-shadow:0 0 40px rgba(0,212,255,.12)}
+.upload-zone:hover::before,.upload-zone.dragover::before{opacity:1}
+.upload-icon{width:68px;height:68px;margin:0 auto 1rem;
+  background:linear-gradient(135deg,rgba(0,212,255,.1),rgba(124,58,237,.1));
+  border:1px solid var(--border2);border-radius:18px;
+  display:flex;align-items:center;justify-content:center;font-size:1.9rem;transition:transform .3s}
+.upload-zone:hover .upload-icon{transform:scale(1.07) translateY(-2px)}
+.upload-zone h3{font-family:var(--fd);font-size:1.05rem;font-weight:800;margin-bottom:.4rem}
+.upload-zone p{color:var(--muted);font-size:.78rem;line-height:1.55}
+.upload-formats{display:inline-flex;gap:.4rem;margin-top:.75rem;flex-wrap:wrap;justify-content:center}
+.fmt-tag{padding:2px 9px;border-radius:5px;font-size:.62rem;font-weight:700;
+  background:rgba(0,212,255,.08);border:1px solid rgba(0,212,255,.18);color:var(--accent);
+  text-transform:uppercase;letter-spacing:.06em}
+.upload-zone input[type=file]{display:none}
+
+/* CAMERA SECTION */
+.camera-section{display:none;background:var(--card);border:1px solid var(--border);
+  border-radius:18px;overflow:hidden;animation:fadeIn .3s ease}
+.camera-section.show{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.cam-top-bar{display:flex;align-items:center;justify-content:space-between;
+  padding:.65rem 1rem;background:var(--surface);border-bottom:1px solid var(--border);flex-wrap:wrap;gap:.4rem}
+.cam-title{font-family:var(--fd);font-size:.85rem;font-weight:800;
+  display:flex;align-items:center;gap:.45rem}
+.cam-title .rdot{width:7px;height:7px;border-radius:50%;background:var(--red);animation:blink .9s ease infinite}
+.cam-btns{display:flex;gap:.4rem;flex-wrap:wrap}
+.btn-cam-ctrl{padding:.38rem .8rem;border-radius:8px;font-size:.72rem;font-weight:700;
+  cursor:pointer;transition:all .2s;font-family:var(--fd);touch-action:manipulation;
+  min-height:36px;display:inline-flex;align-items:center;gap:.3rem}
+.btn-flip{border:1px solid rgba(0,212,255,.25);background:rgba(0,212,255,.08);color:var(--accent)}
+.btn-flip:active{background:rgba(0,212,255,.2)}
+.btn-stop{border:1px solid rgba(239,68,68,.25);background:rgba(239,68,68,.08);color:var(--red)}
+.btn-stop:active{background:rgba(239,68,68,.2)}
+.cam-video-wrap{position:relative;background:#000;min-height:240px;
+  display:flex;align-items:center;justify-content:center;overflow:hidden}
+#cam-video{width:100%;max-height:360px;object-fit:cover;display:block}
+.cam-facing-badge{position:absolute;top:10px;left:10px;padding:3px 10px;
+  background:rgba(0,0,0,.65);border-radius:6px;font-size:.64rem;font-weight:700;
+  color:rgba(255,255,255,.85);backdrop-filter:blur(4px)}
+/* Framing guide overlay */
+.cam-guide{position:absolute;inset:0;pointer-events:none;
+  display:flex;align-items:center;justify-content:center}
+.cam-guide-box{width:min(82%,300px);height:min(72%,220px);
+  border:2px solid rgba(0,212,255,.5);border-radius:10px;
+  box-shadow:0 0 0 9999px rgba(0,0,0,.22)}
+.cam-guide-label{position:absolute;bottom:calc(14% + 220px/2 + 8px);
+  font-size:.64rem;font-weight:700;color:rgba(0,212,255,.8);
+  background:rgba(0,0,0,.5);padding:2px 8px;border-radius:5px;
+  white-space:nowrap;backdrop-filter:blur(3px)}
+/* Device selector */
+.cam-device-bar{padding:.55rem 1rem;background:rgba(0,0,0,.25);
+  display:none;align-items:center;gap:.5rem;flex-wrap:wrap;border-top:1px solid var(--border)}
+.cam-device-bar.show{display:flex}
+.cdl{font-size:.63rem;font-weight:700;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.08em;white-space:nowrap;flex-shrink:0}
+.cam-dev-btn{padding:3px 11px;border-radius:7px;font-size:.67rem;font-weight:700;cursor:pointer;
+  border:1px solid var(--border2);background:transparent;color:var(--muted);transition:all .2s;
+  touch-action:manipulation;white-space:nowrap}
+.cam-dev-btn.on{background:rgba(0,212,255,.1);border-color:rgba(0,212,255,.3);color:var(--accent)}
+/* Capture bar */
+.cam-capture-bar{padding:.85rem 1rem;background:var(--surface);border-top:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center}
+.btn-capture{padding:.72rem 2.2rem;border-radius:12px;border:none;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;
+  font-family:var(--fd);font-size:.9rem;font-weight:800;cursor:pointer;
+  box-shadow:0 4px 18px rgba(0,212,255,.35);transition:all .2s;
+  touch-action:manipulation;min-height:44px;display:inline-flex;align-items:center;gap:.45rem}
+.btn-capture:active{transform:scale(.96);box-shadow:0 2px 8px rgba(0,212,255,.2)}
+
+/* Cam placeholder */
+.cam-placeholder{text-align:center;padding:2.5rem 1rem;
+  background:var(--card);border:1px solid var(--border);border-radius:18px}
+.btn-open-cam{padding:.72rem 2rem;border-radius:12px;border:none;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;
+  font-family:var(--fd);font-size:.9rem;font-weight:800;cursor:pointer;
+  box-shadow:0 4px 18px rgba(0,212,255,.3);touch-action:manipulation;
+  display:inline-flex;align-items:center;gap:.45rem}
+.btn-open-cam:active{transform:scale(.97)}
+
+/* PRECAUTIONS */
+.precautions{background:rgba(245,158,11,.04);border:1px solid rgba(245,158,11,.2);
+  border-radius:14px;padding:1rem 1.1rem;margin-top:1.2rem}
+.prec-header{display:flex;align-items:center;gap:.5rem;font-family:var(--fd);
+  font-size:.84rem;font-weight:800;color:var(--yellow);cursor:pointer;
+  -webkit-user-select:none;user-select:none;touch-action:manipulation;padding:.1rem 0}
+.prec-arrow{margin-left:auto;font-size:.7rem;color:var(--muted);
+  transition:transform .25s;display:inline-block}
+.prec-arrow.open{transform:rotate(180deg)}
+.prec-grid{display:grid;grid-template-columns:1fr 1fr;gap:.55rem;margin-top:.85rem}
+@media(max-width:480px){.prec-grid{grid-template-columns:1fr}}
+.prec-item{display:flex;align-items:flex-start;gap:.5rem;
+  background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.12);
+  border-radius:9px;padding:.6rem .75rem}
+.prec-ico{font-size:1.05rem;flex-shrink:0;line-height:1.35}
+.prec-txt{font-size:.71rem;color:rgba(245,158,11,.9);line-height:1.5}
+.prec-txt strong{display:block;font-weight:700;margin-bottom:1px}
+
+/* PREVIEW CARD */
+.preview-card{display:none;background:var(--card);border:1px solid var(--border);
+  border-radius:18px;overflow:hidden;margin-top:1.2rem;animation:fadeIn .4s ease}
+.preview-card.show{display:block}
+.preview-header{display:flex;align-items:center;justify-content:space-between;
+  padding:.75rem 1.1rem;border-bottom:1px solid var(--border);background:var(--surface);
+  flex-wrap:wrap;gap:.45rem}
+.preview-title{font-family:var(--fd);font-size:.84rem;font-weight:800;
+  display:flex;align-items:center;gap:.4rem;color:var(--text)}
+.green-dot{width:6px;height:6px;border-radius:50%;background:var(--accent3);flex-shrink:0}
+.preview-actions{display:flex;gap:.4rem}
+.btn-sm{padding:.4rem .9rem;border-radius:8px;font-size:.72rem;font-weight:700;
+  cursor:pointer;border:none;transition:all .2s;font-family:var(--fd);
+  display:inline-flex;align-items:center;gap:.3rem;touch-action:manipulation;min-height:36px}
+.btn-clear{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.25)}
+.btn-clear:active{background:rgba(239,68,68,.22)}
+.btn-analyse{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;
+  box-shadow:0 3px 14px rgba(0,212,255,.3)}
+.btn-analyse:active{transform:scale(.96)}
+.btn-analyse:disabled{opacity:.38;cursor:not-allowed;transform:none;box-shadow:none}
+.preview-body{display:flex;flex-direction:column}
+@media(min-width:540px){.preview-body{flex-direction:row}}
+.xray-viewer{position:relative;background:#000;min-height:250px;flex:1;
+  display:flex;align-items:center;justify-content:center}
+.xray-viewer img{width:100%;max-height:360px;object-fit:contain;display:block}
+.xray-overlay{position:absolute;inset:0;background:rgba(0,0,0,.62);
+  display:none;align-items:center;justify-content:center;flex-direction:column;gap:.6rem}
+.xray-overlay.visible{display:flex}
+.scan-ring{width:60px;height:60px;border-radius:50%;
+  border:3px solid transparent;border-top-color:var(--accent);
+  border-right-color:var(--accent2);animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.scan-text{font-family:var(--fd);font-size:.82rem;font-weight:700;color:#fff}
+.scan-sub{font-size:.66rem;color:rgba(255,255,255,.5)}
+.xray-info{padding:1rem;border-top:1px solid var(--border)}
+@media(min-width:540px){.xray-info{border-top:none;border-left:1px solid var(--border);
+  width:170px;flex-shrink:0;display:flex;flex-direction:column;justify-content:center}}
+.fm-label{font-size:.59rem;font-weight:700;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.1em;margin-bottom:.18rem}
+.fm-val{font-size:.8rem;color:var(--text);font-weight:600;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:.75rem}
+#img-canvas{display:none;position:absolute;top:-9999px}
+
+/* RESULTS */
+.results-panel{display:none;margin-top:1.3rem}
+.results-panel.show{display:block;animation:fadeIn .5s ease}
+.sec-heading{display:flex;align-items:center;gap:.7rem;margin-bottom:1.1rem}
+.shn{width:30px;height:30px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,var(--accent3),#00c77a);
+  display:grid;place-items:center;font-size:.75rem;font-weight:900;color:#fff;
+  box-shadow:0 0 12px rgba(0,255,157,.25)}
+.sec-heading-text h2{font-family:var(--fd);font-size:1rem;font-weight:800;
+  background:linear-gradient(90deg,var(--text),var(--accent));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sec-heading-text p{font-size:.68rem;color:var(--muted);margin-top:1px}
+.top-diagnosis{border-radius:16px;padding:1.3rem;margin-bottom:1.2rem;
+  display:flex;align-items:flex-start;gap:1rem;position:relative;overflow:hidden}
+.top-diagnosis::before{content:'';position:absolute;top:-50px;right:-50px;
+  width:180px;height:180px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,255,255,.06),transparent 65%)}
+.td-icon{font-size:2.2rem;flex-shrink:0;line-height:1;margin-top:.1rem}
+.td-tag{font-size:.61rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+  margin-bottom:.28rem;opacity:.7}
+.td-name{font-family:var(--fd);font-size:1.3rem;font-weight:900;line-height:1.12;margin-bottom:.3rem}
+.td-conf{font-size:.8rem;display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;margin-bottom:.35rem}
+.conf-badge{font-family:var(--fd);font-size:1rem;font-weight:900}
+.td-desc{font-size:.72rem;opacity:.65;line-height:1.55}
+.breakdown-title{font-size:.62rem;font-weight:800;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.12em;margin-bottom:.75rem;
+  display:flex;align-items:center;gap:.5rem}
+.breakdown-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.prediction-list{display:flex;flex-direction:column;gap:.55rem}
+.pred-row{background:var(--card);border:1px solid var(--border);border-radius:12px;
+  padding:.85rem 1rem;display:flex;align-items:center;gap:.75rem;
+  animation:slideIn .4s ease both;transition:border-color .2s}
+.pred-row.top-row{border-color:rgba(0,212,255,.22)}
+@keyframes slideIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+.pred-icon{font-size:1.35rem;flex-shrink:0;width:32px;text-align:center}
+.pred-name{flex:1;min-width:0}
+.pred-n{font-family:var(--fd);font-size:.83rem;font-weight:800;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pred-bar-wrap{width:115px;flex-shrink:0}
+@media(max-width:380px){.pred-bar-wrap{width:85px}}
+.pred-bar-bg{height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;margin-bottom:.2rem}
+.pred-bar-fill{height:100%;border-radius:3px;width:0;transition:width 1.2s cubic-bezier(.4,0,.2,1)}
+.pred-pct-row{display:flex;justify-content:space-between;align-items:center}
+.pred-pct{font-family:var(--fd);font-size:.7rem;font-weight:800}
+.pred-rank{padding:1px 6px;border-radius:4px;font-size:.55rem;font-weight:800;
+  text-transform:uppercase;letter-spacing:.06em}
+.disclaimer{background:rgba(245,158,11,.05);border:1px solid rgba(245,158,11,.18);
+  border-radius:11px;padding:.85rem 1rem;font-size:.7rem;color:rgba(245,158,11,.9);
+  line-height:1.6;display:flex;gap:.5rem;align-items:flex-start;margin-top:1.1rem}
+
+
+.lx-lang-btn{padding:.25rem .55rem;border-radius:7px;border:1px solid rgba(0,212,255,.25);
+  background:rgba(255,255,255,.03);color:#3d5a7a;font-size:.62rem;font-weight:700;
+  cursor:pointer;transition:all .2s;font-family:'Space Grotesk',sans-serif;}
+.lx-lang-btn:hover{background:rgba(0,212,255,.1);color:#00d4ff;}
+.lx-lang-btn.active{background:linear-gradient(135deg,rgba(0,212,255,.2),rgba(124,58,237,.15));
+  color:#00d4ff;border-color:rgba(0,212,255,.4);}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-wrap">
+    <div class="logo-icon">&#127973;</div>
+    <div>
+      <div class="logo-name">AAROGYA AI</div>
+      <div class="logo-sub" id="lx-logo-sub">Lung X-Ray Analyser</div>
+    </div>
+  </div>
+  <div class="lang-switcher" id="lxLangSwitcher" style="margin-left:auto;display:flex;gap:.28rem;align-items:center;flex-wrap:wrap;">
+    <button class="lx-lang-btn active" onclick="lxSetLang('en')" data-lang="en">🇬🇧 EN</button>
+    <button class="lx-lang-btn" onclick="lxSetLang('hi')" data-lang="hi">🇮🇳 हिं</button>
+    <button class="lx-lang-btn" onclick="lxSetLang('kn')" data-lang="kn">🇮🇳 ಕನ್ನ</button>
+    <button class="lx-lang-btn" onclick="lxSetLang('te')" data-lang="te">🇮🇳 తెలు</button>
+    <button class="lx-lang-btn" onclick="lxSetLang('ta')" data-lang="ta">🇮🇳 தமி</button>
+  </div>
+  <a href="{{ url_for('index') }}" class="back-btn" id="lx-back-btn">&#8592; Back</a>
+</header>
+
+<div class="wrap">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-eyebrow">
+      <span class="live-dot"></span>
+      <span id="lx-eyebrow">AI-Powered &middot; X-Ray Analysis &middot; 5 Conditions</span>
+    </div>
+    <h1 id="lx-h1">Lung X-Ray</h1><h1 style="margin-top:-.3rem"><span class="hl" id="lx-h1b">Disease Detection</span></h1>
+    <p id="lx-hero-p">Upload a chest X-ray or capture with your camera. Runs entirely on your device — nothing is uploaded to any server.</p>
+  </div>
+
+  <!-- MODEL STATUS -->
+  <div class="model-status-bar">
+    <div class="ms-dot" id="ms-dot"></div>
+    <div class="ms-text" id="ms-text"><strong id="ms-text-strong">Loading model…</strong> <span id="ms-text-sub">Initialising AI weights.</span></div>
+    <div class="ms-prog" id="ms-prog"></div>
+  </div>
+
+  <!-- MODE TABS -->
+  <div class="mode-tabs">
+    <div class="mode-tab active" id="tab-upload" onclick="switchMode('upload')">
+      <span class="mt-icon">&#128444;&#65039;</span id="lx-tab-upload">&#128444;&#65039;&nbsp;<span id="lx-tab-upload-txt">Upload X-Ray</span>
+    </div>
+    <div class="mode-tab" id="tab-camera" onclick="switchMode('camera')">
+      <span class="mt-icon">&#128247;</span id="lx-tab-camera">&#128247;&nbsp;<span id="lx-tab-camera-txt">Use Camera</span>
+    </div>
+  </div>
+
+  <!-- UPLOAD SECTION -->
+  <div id="section-upload">
+    <div class="upload-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+      <div class="upload-icon">&#129981;</div>
+      <h3 id="lx-upload-h3">Tap to upload X-ray</h3>
+      <p id="lx-upload-p">or drag &amp; drop a chest X-ray image here</p>
+      <div class="upload-formats">
+        <span class="fmt-tag">JPEG</span>
+        <span class="fmt-tag">PNG</span>
+        <span class="fmt-tag">WebP</span>
+        <span class="fmt-tag">HEIC</span>
+        <span class="fmt-tag">BMP</span>
+      </div>
+      <input type="file" id="file-input" accept="image/*,image/heic,image/heif"/>
+    </div>
+  </div>
+
+  <!-- CAMERA SECTION -->
+  <div id="section-camera" style="display:none">
+    <!-- Placeholder before camera starts -->
+    <div class="cam-placeholder" id="cam-placeholder">
+      <div style="font-size:2.4rem;margin-bottom:.7rem">&#128247;</div>
+      <div style="font-family:var(--fd);font-size:1rem;font-weight:800;margin-bottom:.35rem"><span id="lx-cam-open-title">Open Camera</span></div>
+      <div style="font-size:.77rem;color:var(--muted);margin-bottom:1.1rem;max-width:320px;margin-inline:auto;line-height:1.55">
+        Position the X-ray film against a light source, hold steady, and capture. Use rear camera for best quality.
+      </div>
+      <button class="btn-open-cam" onclick="startCamera()"><span id="lx-start-cam-btn">&#128247;&nbsp; Start Camera</span></button>
+    </div>
+    <!-- Live camera view -->
+    <div class="camera-section" id="camera-section">
+      <div class="cam-top-bar">
+        <div class="cam-title"><span class="rdot"></span>&nbsp;<span id="lx-live-cam">Live Camera</span></div>
+        <div class="cam-btns">
+          <button class="btn-cam-ctrl btn-flip" onclick="flipCamera()"><span id="lx-flip-btn">&#8635; Flip</span></button>
+          <button class="btn-cam-ctrl btn-stop" onclick="stopCamera()"><span id="lx-stop-btn">&#9632; Stop</span></button>
+        </div>
+      </div>
+      <div class="cam-video-wrap">
+        <video id="cam-video" autoplay playsinline muted></video>
+        <div class="cam-facing-badge" id="cam-facing-badge"><!-- set by JS --></div>
+        <div class="cam-guide">
+          <div class="cam-guide-box"></div>
+        </div>
+      </div>
+      <!-- Multi-device selector -->
+      <div class="cam-device-bar" id="cam-device-bar">
+        <span class="cdl">Camera:</span>
+        <div id="cam-dev-btns" style="display:flex;gap:.4rem;flex-wrap:wrap"></div>
+      </div>
+      <div class="cam-capture-bar">
+        <button class="btn-capture" onclick="captureFrame()"><span id="lx-capture-btn">&#128247;&nbsp; Capture &amp; Analyse</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUALITY PRECAUTIONS (collapsible) -->
+  <div class="precautions">
+    <div class="prec-header" onclick="togglePrec()">
+      <span style="font-size:1rem">&#9888;&#65039;</span>
+      &nbsp;<span id="lx-precautions-title">Image Quality Precautions</span>
+      <span class="prec-arrow open" id="prec-arrow">&#9650;</span>
+    </div>
+    <div id="prec-grid" class="prec-grid">
+      <div class="prec-item">
+        <span class="prec-ico">&#9728;&#65039;</span>
+        <div class="prec-txt"><strong id="lx-prec1-title">Good Lighting</strong>Place X-ray on a light box or against a bright window. Avoid shadows and glare on the film.</div>
+      </div>
+      <div class="prec-item">
+        <span class="prec-ico">&#128247;</span>
+        <div class="prec-txt"><strong id="lx-prec2-title">Hold Steady</strong>Keep your device perfectly still when capturing. Even slight motion blur greatly reduces accuracy.</div>
+      </div>
+      <div class="prec-item">
+        <span class="prec-ico">&#128301;</span>
+        <div class="prec-txt"><strong id="lx-prec3-title">Fill the Frame</strong>Fit the full lung area inside the guide box. Avoid large dark borders around the X-ray.</div>
+      </div>
+      <div class="prec-item">
+        <span class="prec-ico">&#128065;&#65039;</span>
+        <div class="prec-txt"><strong id="lx-prec4-title">Frontal View Only</strong>Use a PA or AP view X-ray. Lateral or oblique views will produce inaccurate results.</div>
+      </div>
+      <div class="prec-item">
+        <span class="prec-ico">&#128260;</span>
+        <div class="prec-txt"><strong id="lx-prec5-title">High Resolution</strong>Use the rear camera for scanning. Minimum 400&times;400 pixels recommended for reliable results.</div>
+      </div>
+      <div class="prec-item">
+        <span class="prec-ico">&#10060;</span>
+        <div class="prec-txt"><strong id="lx-prec6-title">No Filters or Edits</strong>Do not apply photo filters, colour adjustments or heavy JPEG compression before uploading.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PREVIEW CARD -->
+  <div class="preview-card" id="preview-card">
+    <div class="preview-header">
+      <div class="preview-title"><span class="green-dot"></span> <span id="lx-preview-title">X-Ray Preview</span></div>
+      <div class="preview-actions">
+        <button class="btn-sm btn-clear" onclick="clearImage()"><span id="lx-clear-btn">&#10005; Clear</span></button>
+        <button class="btn-sm btn-analyse" id="btn-analyse" onclick="analyseXRay()" disabled><span id="lx-analyse-btn">&#128300;&nbsp;Analyse</span></button>
+      </div>
+    </div>
+    <div class="preview-body">
+      <div class="xray-viewer">
+        <img id="preview-img" src="" alt="X-Ray"/>
+        <div class="xray-overlay" id="xray-overlay">
+          <div class="scan-ring"></div>
+          <div class="scan-text">Scanning…</div>
+          <div class="scan-sub" id="scan-status" data-lx-key="scan_preprocessing">Preprocessing image</div>
+        </div>
+      </div>
+      <div class="xray-info">
+        <div class="fm-label">File</div><div class="fm-val" id="fm-name">—</div>
+        <div class="fm-label">Size</div><div class="fm-val" id="fm-size">—</div>
+        <div class="fm-label">Dimensions</div><div class="fm-val" id="fm-dims">—</div>
+        <div class="fm-label">Model</div><div class="fm-val" id="fm-model">Loading…</div>
+      </div>
+    </div>
+  </div>
+  <canvas id="img-canvas"></canvas>
+
+  <!-- RESULTS -->
+  <div class="results-panel" id="results-panel">
+    <div class="sec-heading" style="margin-top:1.5rem">
+      <div class="shn">&#10003;</div>
+      <div class="sec-heading-text">
+        <h2 id="lx-results-h2">Analysis Complete</h2>
+        <p id="lx-results-p">AI predictions ranked by confidence — informational purposes only</p>
+      </div>
+    </div>
+    <div id="top-diagnosis" class="top-diagnosis"></div>
+    <div class="breakdown-title" id="lx-breakdown-title">All 5 Conditions Scored</div>
+    <div class="prediction-list" id="prediction-list"></div>
+    <div class="disclaimer">
+      <span style="font-size:1rem;flex-shrink:0">&#9888;&#65039;</span>
+      <div><strong id="lx-disclaimer-title">Medical Disclaimer:</strong> This tool is for informational and educational purposes only.
+      It does not constitute medical advice, diagnosis or treatment.
+      X-ray interpretation requires a trained radiologist. Always consult a qualified healthcare professional.</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ══ LUNG XRAY LANGUAGE ENGINE ══
+var LX_LANG = 'en';
+var LX_TRANSLATIONS = {
+ en:{
+  logo_sub:"Lung X-Ray Analyser", back_btn:"← Back",
+  eyebrow:"AI-Powered · X-Ray Analysis · 5 Conditions",
+  h1:"Lung X-Ray", h1b:"Disease Detection",
+  hero_p:"Upload a chest X-ray or capture with your camera. Runs entirely on your device — nothing is uploaded to any server.",
+  tab_upload:"Upload X-Ray", tab_camera:"Use Camera",
+  upload_h3:"Tap to upload X-ray", upload_p:"or drag & drop a chest X-ray image here",
+  cam_open:"Open Camera",
+  cam_instruction:"Position the X-ray film against a light source, hold steady, and capture. Use rear camera for best quality.",
+  start_cam:"📷  Start Camera", live_cam:"Live Camera",
+  flip_btn:"⟳ Flip", stop_btn:"■ Stop", capture_btn:"📷  Capture & Analyse",
+  precautions_title:"Image Quality Precautions",
+  prec1:"Good Lighting", prec2:"Hold Steady", prec3:"Fill the Frame",
+  prec4:"Frontal View Only", prec5:"High Resolution", prec6:"No Filters or Edits",
+  preview_title:"X-Ray Preview", clear_btn:"✕ Clear", analyse_btn:"🔬 Analyse",
+  results_h2:"Analysis Complete", results_p:"AI predictions ranked by confidence — informational purposes only",
+  breakdown:"All 5 Conditions Scored", disclaimer_title:"Medical Disclaimer:",
+  model_loading:"Loading AI model… Fetching weights.",
+  model_ready:"Model Ready — Upload or capture an X-ray to begin.",
+  front_cam:"Front", rear_cam:"Rear", camera_word:"Camera",
+  model_error:"Model Error:",
+  scan_preprocessing:"Preprocessing image",
+  scan_running:"Running neural network…",
+  scan_generating:"Generating report…",
+  not_ready:"Model is still loading. Please wait a moment.",
+  cam_not_ready:"Camera not ready yet. Please wait.",
+  cam_error:"Camera error:",
+  cam_check:"Check camera permissions in your browser settings.",
+ },
+ hi:{
+  logo_sub:"फेफड़े का एक्स-रे विश्लेषक", back_btn:"← वापस",
+  eyebrow:"AI-संचालित · एक्स-रे विश्लेषण · 5 स्थितियां",
+  h1:"फेफड़े का एक्स-रे", h1b:"रोग पहचान",
+  hero_p:"एक्स-रे अपलोड करें या कैमरे से कैप्चर करें। पूरी तरह से आपके डिवाइस पर चलता है — कोई डेटा सर्वर पर नहीं जाता।",
+  tab_upload:"एक्स-रे अपलोड करें", tab_camera:"कैमरा उपयोग करें",
+  upload_h3:"एक्स-रे अपलोड करने के लिए टैप करें", upload_p:"या यहां छाती का एक्स-रे खींचें और छोड़ें",
+  cam_open:"कैमरा खोलें",
+  cam_instruction:"एक्स-रे फिल्म को रोशनी के सामने रखें, स्थिर रखें और कैप्चर करें। बेहतर गुणवत्ता के लिए रियर कैमरा उपयोग करें।",
+  start_cam:"📷  कैमरा शुरू करें", live_cam:"लाइव कैमरा",
+  flip_btn:"⟳ पलटें", stop_btn:"■ बंद करें", capture_btn:"📷  कैप्चर और विश्लेषण करें",
+  precautions_title:"छवि गुणवत्ता सावधानियां",
+  prec1:"अच्छी रोशनी", prec2:"स्थिर रखें", prec3:"फ्रेम भरें",
+  prec4:"केवल सामने का दृश्य", prec5:"उच्च रिज़ॉल्यूशन", prec6:"कोई फिल्टर या संपादन नहीं",
+  preview_title:"एक्स-रे पूर्वावलोकन", clear_btn:"✕ साफ करें", analyse_btn:"🔬 विश्लेषण करें",
+  results_h2:"विश्लेषण पूर्ण", results_p:"AI भविष्यवाणियां विश्वास के आधार पर क्रमबद्ध — केवल सूचनात्मक उद्देश्यों के लिए",
+  breakdown:"सभी 5 स्थितियां स्कोर की गईं", disclaimer_title:"चिकित्सा अस्वीकरण:",
+  model_loading:"AI मॉडल लोड हो रहा है…",
+  model_ready:"मॉडल तैयार — विश्लेषण शुरू करने के लिए एक्स-रे अपलोड करें।",
+  front_cam:"आगे", rear_cam:"पीछे", camera_word:"कैमरा",
+  model_error:"मॉडल त्रुटि:",
+  scan_preprocessing:"छवि प्रसंस्करण हो रहा है",
+  scan_running:"न्यूरल नेटवर्क चल रहा है…",
+  scan_generating:"रिपोर्ट तैयार हो रही है…",
+  not_ready:"मॉडल अभी लोड हो रहा है। कृपया प्रतीक्षा करें।",
+  cam_not_ready:"कैमरा अभी तैयार नहीं है। कृपया प्रतीक्षा करें।",
+  cam_error:"कैमरा त्रुटि:",
+  cam_check:"अपने ब्राउज़र सेटिंग में कैमरा अनुमतियां जांचें।",
+ },
+ kn:{
+  logo_sub:"ಶ್ವಾಸಕೋಶ ಎಕ್ಸ್-ರೇ ವಿಶ್ಲೇಷಕ", back_btn:"← ಹಿಂದೆ",
+  eyebrow:"AI-ಚಾಲಿತ · ಎಕ್ಸ್-ರೇ ವಿಶ್ಲೇಷಣೆ · 5 ಸ್ಥಿತಿಗಳು",
+  h1:"ಶ್ವಾಸಕೋಶ ಎಕ್ಸ್-ರೇ", h1b:"ರೋಗ ಪತ್ತೆ",
+  hero_p:"ಎಕ್ಸ್-ರೇ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ ಅಥವಾ ಕ್ಯಾಮೆರಾದಿಂದ ತೆಗೆಯಿರಿ. ಸಂಪೂರ್ಣವಾಗಿ ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿ ಚಲಿಸುತ್ತದೆ — ಯಾವ ಡೇಟಾವೂ ಸರ್ವರ್‌ಗೆ ಹೋಗುವುದಿಲ್ಲ.",
+  tab_upload:"ಎಕ್ಸ್-ರೇ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ", tab_camera:"ಕ್ಯಾಮೆರಾ ಬಳಸಿ",
+  upload_h3:"ಎಕ್ಸ್-ರೇ ಅಪ್‌ಲೋಡ್ ಮಾಡಲು ಟ್ಯಾಪ್ ಮಾಡಿ", upload_p:"ಅಥವಾ ಎದೆಯ ಎಕ್ಸ್-ರೇ ಚಿತ್ರವನ್ನು ಇಲ್ಲಿ ಎಳೆದು ಬಿಡಿ",
+  cam_open:"ಕ್ಯಾಮೆರಾ ತೆರೆಯಿರಿ",
+  cam_instruction:"ಎಕ್ಸ್-ರೇ ಫಿಲ್ಮ್ ಅನ್ನು ಬೆಳಕಿನ ಮುಂದೆ ಇರಿಸಿ, ಸ್ಥಿರವಾಗಿ ಹಿಡಿದು ತೆಗೆಯಿರಿ. ಉತ್ತಮ ಗುಣಮಟ್ಟಕ್ಕೆ ರಿಯರ್ ಕ್ಯಾಮೆರಾ ಬಳಸಿ.",
+  start_cam:"📷  ಕ್ಯಾಮೆರಾ ಪ್ರಾರಂಭಿಸಿ", live_cam:"ಲೈವ್ ಕ್ಯಾಮೆರಾ",
+  flip_btn:"⟳ ತಿರುಗಿಸಿ", stop_btn:"■ ನಿಲ್ಲಿಸಿ", capture_btn:"📷  ತೆಗೆಯಿರಿ ಮತ್ತು ವಿಶ್ಲೇಷಿಸಿ",
+  precautions_title:"ಚಿತ್ರ ಗುಣಮಟ್ಟ ಮುನ್ನೆಚ್ಚರಿಕೆಗಳು",
+  prec1:"ಉತ್ತಮ ಬೆಳಕು", prec2:"ಸ್ಥಿರವಾಗಿ ಹಿಡಿಯಿರಿ", prec3:"ಫ್ರೇಮ್ ತುಂಬಿಸಿ",
+  prec4:"ಮುಂಭಾಗದ ನೋಟ ಮಾತ್ರ", prec5:"ಉಚ್ಚ ರೆಸಲ್ಯೂಶನ್", prec6:"ಫಿಲ್ಟರ್ ಅಥವಾ ಸಂಪಾದನೆ ಬೇಡ",
+  preview_title:"ಎಕ್ಸ್-ರೇ ಪೂರ್ವವೀಕ್ಷಣೆ", clear_btn:"✕ ತೆರವು", analyse_btn:"🔬 ವಿಶ್ಲೇಷಿಸಿ",
+  results_h2:"ವಿಶ್ಲೇಷಣೆ ಪೂರ್ಣ", results_p:"AI ಭವಿಷ್ಯವಾಣಿಗಳು ವಿಶ್ವಾಸದ ಮೇಲೆ ಶ್ರೇಣೀಕರಿಸಲಾಗಿದೆ — ಕೇವಲ ಮಾಹಿತಿ ಉದ್ದೇಶಕ್ಕಾಗಿ",
+  breakdown:"ಎಲ್ಲಾ 5 ಸ್ಥಿತಿಗಳು ಸ್ಕೋರ್ ಆಗಿವೆ", disclaimer_title:"ವೈದ್ಯಕೀಯ ಹಕ್ಕು ನಿರಾಕರಣೆ:",
+  model_loading:"AI ಮಾದರಿ ಲೋಡ್ ಆಗುತ್ತಿದೆ…",
+  model_ready:"ಮಾದರಿ ಸಿದ್ಧ — ವಿಶ್ಲೇಷಣೆ ಪ್ರಾರಂಭಿಸಲು ಎಕ್ಸ್-ರೇ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ.",
+  front_cam:"ಮುಂದೆ", rear_cam:"ಹಿಂದೆ", camera_word:"ಕ್ಯಾಮೆರಾ",
+  model_error:"ಮಾದರಿ ದೋಷ:",
+  scan_preprocessing:"ಚಿತ್ರ ಪ್ರಕ್ರಿಯಿಸಲಾಗುತ್ತಿದೆ",
+  scan_running:"ನ್ಯೂರಲ್ ನೆಟ್‌ವರ್ಕ್ ಚಲಿಸುತ್ತಿದೆ…",
+  scan_generating:"ವರದಿ ರಚಿಸಲಾಗುತ್ತಿದೆ…",
+  not_ready:"ಮಾದರಿ ಇನ್ನೂ ಲೋಡ್ ಆಗುತ್ತಿದೆ. ದಯವಿಟ್ಟು ನಿರೀಕ್ಷಿಸಿ.",
+  cam_not_ready:"ಕ್ಯಾಮೆರಾ ಇನ್ನೂ ಸಿದ್ಧವಿಲ್ಲ. ದಯವಿಟ್ಟು ನಿರೀಕ್ಷಿಸಿ.",
+  cam_error:"ಕ್ಯಾಮೆರಾ ದೋಷ:",
+  cam_check:"ನಿಮ್ಮ ಬ್ರೌಸರ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಕ್ಯಾಮೆರಾ ಅನುಮತಿಗಳನ್ನು ಪರಿಶೀಲಿಸಿ.",
+ },
+ te:{
+  logo_sub:"ఊపిరితిత్తుల ఎక్స్-రే విశ్లేషకుడు", back_btn:"← వెనుకకు",
+  eyebrow:"AI-ఆధారిత · ఎక్స్-రే విశ్లేషణ · 5 పరిస్థితులు",
+  h1:"ఊపిరితిత్తుల ఎక్స్-రే", h1b:"వ్యాధి గుర్తింపు",
+  hero_p:"ఎక్స్-రే అప్‌లోడ్ చేయండి లేదా కెమెరాతో తీయండి. పూర్తిగా మీ పరికరంలో నడుస్తుంది — సర్వర్‌కి ఏ డేటా వెళ్ళదు.",
+  tab_upload:"ఎక్స్-రే అప్‌లోడ్ చేయండి", tab_camera:"కెమెరా ఉపయోగించండి",
+  upload_h3:"ఎక్స్-రే అప్‌లోడ్ చేయడానికి నొక్కండి", upload_p:"లేదా ఛాతీ ఎక్స్-రే చిత్రాన్ని ఇక్కడ లాగండి",
+  cam_open:"కెమెరా తెరవండి",
+  cam_instruction:"ఎక్స్-రే ఫిల్మ్‌ని కాంతి వనరు ముందు ఉంచండి, స్థిరంగా పట్టుకొని తీయండి. మంచి నాణ్యత కోసం రియర్ కెమెరా వాడండి.",
+  start_cam:"📷  కెమెరా ప్రారంభించండి", live_cam:"లైవ్ కెమెరా",
+  flip_btn:"⟳ తిప్పండి", stop_btn:"■ ఆపండి", capture_btn:"📷  తీయండి మరియు విశ్లేషించండి",
+  precautions_title:"చిత్ర నాణ్యత జాగ్రత్తలు",
+  prec1:"మంచి వెలుతురు", prec2:"స్థిరంగా పట్టుకోండి", prec3:"ఫ్రేమ్ నింపండి",
+  prec4:"ముందు దృశ్యం మాత్రమే", prec5:"అధిక రిజల్యూషన్", prec6:"ఫిల్టర్లు లేదా సవరణలు వద్దు",
+  preview_title:"ఎక్స్-రే పూర్వావలోకనం", clear_btn:"✕ తొలగించు", analyse_btn:"🔬 విశ్లేషించండి",
+  results_h2:"విశ్లేషణ పూర్తయింది", results_p:"AI అంచనాలు విశ్వాసం ఆధారంగా క్రమపరిచారు — సమాచార ప్రయోజనాల కోసం మాత్రమే",
+  breakdown:"అన్ని 5 పరిస్థితులు స్కోర్ చేయబడ్డాయి", disclaimer_title:"వైద్య నిరాకరణ:",
+  model_loading:"AI నమూనా లోడ్ అవుతోంది…",
+  model_ready:"నమూనా సిద్ధంగా ఉంది — విశ్లేషణ ప్రారంభించడానికి ఎక్స్-రే అప్‌లోడ్ చేయండి.",
+  front_cam:"ముందు", rear_cam:"వెనుక", camera_word:"కెమెరా",
+  model_error:"నమూనా దోషం:",
+  scan_preprocessing:"చిత్రం ప్రాసెస్ అవుతోంది",
+  scan_running:"న్యూరల్ నెట్‌వర్క్ నడుస్తోంది…",
+  scan_generating:"నివేదిక రూపొందుతోంది…",
+  not_ready:"నమూనా ఇంకా లోడ్ అవుతోంది. దయచేసి వేచి ఉండండి.",
+  cam_not_ready:"కెమెరా ఇంకా సిద్ధంగా లేదు. దయచేసి వేచి ఉండండి.",
+  cam_error:"కెమెరా దోషం:",
+  cam_check:"మీ బ్రౌజర్ సెట్టింగ్‌లలో కెమెరా అనుమతులను తనిఖీ చేయండి.",
+ },
+ ta:{
+  logo_sub:"நுரையீரல் எக்ஸ்-ரே பகுப்பாய்வி", back_btn:"← திரும்பு",
+  eyebrow:"AI-ஆதரவு · எக்ஸ்-ரே பகுப்பாய்வு · 5 நிலைகள்",
+  h1:"நுரையீரல் எக்ஸ்-ரே", h1b:"நோய் கண்டறிதல்",
+  hero_p:"எக்ஸ்-ரே பதிவேற்றவும் அல்லது கேமராவில் எடுக்கவும். முழுமையாக உங்கள் சாதனத்தில் இயங்குகிறது — எந்த தரவும் சேவையகத்திற்கு அனுப்பப்படுவதில்லை.",
+  tab_upload:"எக்ஸ்-ரே பதிவேற்று", tab_camera:"கேமரா பயன்படுத்து",
+  upload_h3:"எக்ஸ்-ரே பதிவேற்ற தட்டவும்", upload_p:"அல்லது மார்பு எக்ஸ்-ரே படத்தை இங்கே இழுத்து விடவும்",
+  cam_open:"கேமரா திறவும்",
+  cam_instruction:"எக்ஸ்-ரே பிலிமை ஒளி மூலத்திற்கு எதிராக வைக்கவும், நிலையாக பிடித்து எடுக்கவும். சிறந்த தரத்திற்கு பின் கேமரா பயன்படுத்தவும்.",
+  start_cam:"📷  கேமரா தொடங்கவும்", live_cam:"நேரடி கேமரா",
+  flip_btn:"⟳ திருப்பவும்", stop_btn:"■ நிறுத்தவும்", capture_btn:"📷  படம் எடுத்து பகுப்பாய்வு செய்யவும்",
+  precautions_title:"படத் தர முன்னெச்சரிக்கைகள்",
+  prec1:"நல்ல வெளிச்சம்", prec2:"நிலையாக பிடிக்கவும்", prec3:"சட்டகத்தை நிரப்பவும்",
+  prec4:"முன்புற காட்சி மட்டும்", prec5:"உயர் தெளிவுத்திறன்", prec6:"வடிப்பான்கள் அல்லது திருத்தங்கள் வேண்டாம்",
+  preview_title:"எக்ஸ்-ரே முன்னோட்டம்", clear_btn:"✕ அழிக்கவும்", analyse_btn:"🔬 பகுப்பாய்வு செய்யவும்",
+  results_h2:"பகுப்பாய்வு முடிந்தது", results_p:"AI கணிப்புகள் நம்பகத்தன்மையின் அடிப்படையில் வரிசைப்படுத்தப்பட்டவை — தகவல் நோக்கங்களுக்காக மட்டுமே",
+  breakdown:"அனைத்து 5 நிலைகளும் மதிப்பிடப்பட்டவை", disclaimer_title:"மருத்துவ மறுப்பு:",
+  model_loading:"AI மாதிரி ஏற்றப்படுகிறது…",
+  model_ready:"மாதிரி தயார் — பகுப்பாய்வு தொடங்க எக்ஸ்-ரே பதிவேற்றவும்.",
+  front_cam:"முன்", rear_cam:"பின்", camera_word:"கேமரா",
+  model_error:"மாதிரி பிழை:",
+  scan_preprocessing:"படம் செயலாக்கப்படுகிறது",
+  scan_running:"நரம்பியல் வலையமைப்பு இயங்குகிறது…",
+  scan_generating:"அறிக்கை உருவாக்கப்படுகிறது…",
+  not_ready:"மாதிரி இன்னும் ஏற்றப்படுகிறது. சிறிது நேரம் காத்திருக்கவும்.",
+  cam_not_ready:"கேமரா இன்னும் தயாராகவில்லை. காத்திருக்கவும்.",
+  cam_error:"கேமரா பிழை:",
+  cam_check:"உங்கள் உலாவி அமைப்புகளில் கேமரா அனுமதிகளை சரிபார்க்கவும்.",
+ }
+};
+
+function lxt(key){ return (LX_TRANSLATIONS[LX_LANG]&&LX_TRANSLATIONS[LX_LANG][key])||LX_TRANSLATIONS.en[key]||key; }
+
+function lxSetLang(lang){
+  LX_LANG = lang;
+  document.querySelectorAll('.lx-lang-btn').forEach(function(b){
+    b.classList.toggle('active', b.getAttribute('data-lang')===lang);
+  });
+  lxApplyLang();
+}
+
+function lxApplyLang(){
+  var map = {
+    'lx-logo-sub':'logo_sub','lx-back-btn':'back_btn','lx-eyebrow':'eyebrow',
+    'lx-h1':'h1','lx-h1b':'h1b','lx-hero-p':'hero_p',
+    'lx-tab-upload-txt':'tab_upload','lx-tab-camera-txt':'tab_camera',
+    'lx-upload-h3':'upload_h3','lx-upload-p':'upload_p',
+    'lx-cam-open-title':'cam_open','lx-cam-instruction':'cam_instruction',
+    'lx-live-cam':'live_cam',
+    'lx-precautions-title':'precautions_title',
+    'lx-prec1-title':'prec1','lx-prec2-title':'prec2','lx-prec3-title':'prec3',
+    'lx-prec4-title':'prec4','lx-prec5-title':'prec5','lx-prec6-title':'prec6',
+    'lx-preview-title':'preview_title',
+    'lx-results-h2':'results_h2','lx-results-p':'results_p',
+    'lx-breakdown-title':'breakdown','lx-disclaimer-title':'disclaimer_title',
+  };
+  Object.keys(map).forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.textContent = lxt(map[id]);
+  });
+  // Buttons with icons (preserve emoji+text)
+  var btnMap = {
+    'lx-start-cam-btn':'start_cam','lx-flip-btn':'flip_btn','lx-stop-btn':'stop_btn',
+    'lx-capture-btn':'capture_btn','lx-clear-btn':'clear_btn','lx-analyse-btn':'analyse_btn'
+  };
+  Object.keys(btnMap).forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.innerHTML = lxt(btnMap[id]);
+  });
+  // Camera facing badge (if camera is live)
+  var badge = document.getElementById('cam-facing-badge');
+  if(badge && badge.textContent.trim() !== '') {
+    badge.textContent = (typeof facing!=='undefined'&&facing==='user'?lxt('front_cam'):lxt('rear_cam'))+' '+lxt('camera_word');
+  }
+  // Active lang button highlight
+  document.querySelectorAll('.lx-lang-btn').forEach(function(b){
+    b.classList.toggle('active', b.getAttribute('data-lang')===LX_LANG);
+  });
+}
+
+// Apply on load
+document.addEventListener('DOMContentLoaded', function(){ lxApplyLang(); });
+window.addEventListener('load', function(){ lxApplyLang(); });
+
+// ── DISEASE META ─────────────────────────────────────────────────────────────
+const LABELS = [
+  "Normal lungs",
+  "Lungs affected with Bacterial Pneumonia",
+  "Lungs affected with Corona Virus ",
+  "Lungs affected with Tuberculosis ",
+  " Lungs affected with Viral Pneumonia"
+];
+const DMETA = {
+  "normal lungs":                               {icon:"🫁",color:"#10b981",bg:"rgba(16,185,129,.12)",tc:"#34d399",sn:"Normal Lungs",
+    desc:"No significant pathological findings detected. Lung fields appear clear with no opacities or consolidation."},
+  "lungs affected with bacterial pneumonia":    {icon:"🦠",color:"#ef4444",bg:"rgba(239,68,68,.12)",tc:"#f87171",sn:"Bacterial Pneumonia",
+    desc:"May present as lobar consolidation or patchy infiltrates. Sputum culture and sensitivity testing recommended."},
+  "lungs affected with corona virus":           {icon:"🔴",color:"#f59e0b",bg:"rgba(245,158,11,.12)",tc:"#fbbf24",sn:"COVID-19 Pneumonia",
+    desc:"Typically shows bilateral ground-glass opacities. RT-PCR testing strongly advised for confirmation."},
+  "lungs affected with tuberculosis":           {icon:"⚠️",color:"#8b5cf6",bg:"rgba(139,92,246,.12)",tc:"#a78bfa",sn:"Tuberculosis",
+    desc:"May show upper lobe infiltrates or cavitation. Sputum AFB smear, GeneXpert and IGRA testing recommended."},
+  "lungs affected with viral pneumonia":        {icon:"🫧",color:"#06b6d4",bg:"rgba(6,182,212,.12)",tc:"#22d3ee",sn:"Viral Pneumonia",
+    desc:"Often presents as bilateral interstitial infiltrates or perihilar haze. Viral panel testing may identify causative agent."}
+};
+function getMeta(label){
+  const k = label.trim().toLowerCase();
+  if(DMETA[k]) return DMETA[k];
+  for(const dk of Object.keys(DMETA)){
+    if(k.includes(dk)||dk.includes(k)) return DMETA[dk];
+  }
+  return {icon:"🔬",color:"#00d4ff",bg:"rgba(0,212,255,.12)",tc:"#00d4ff",sn:label.trim(),desc:""};
+}
+
+// ── MODEL ────────────────────────────────────────────────────────────────────
+let model=null, modelReady=false;
+const MODEL_URL="{{ url_for('static', filename='model.json') }}";
+
+async function loadModel(){
+  const dot=document.getElementById('ms-dot'),
+        txt=document.getElementById('ms-text'),
+        prog=document.getElementById('ms-prog');
+  try{
+    txt.innerHTML='<strong>'+lxt('model_loading')+'</strong>';
+    model=await tf.loadLayersModel(MODEL_URL,{onProgress:f=>{prog.textContent=Math.round(f*100)+'%'}});
+    // Warm-up pass to initialise GPU kernels
+    const w=tf.zeros([1,224,224,3]);
+    const o=model.predict(w);
+    o.dispose(); w.dispose();
+    modelReady=true;
+    dot.classList.add('ready');
+    txt.innerHTML='<strong>'+lxt('model_ready')+'</strong>';
+    prog.textContent='✓';
+    document.getElementById('fm-model').textContent='Ready ✓';
+    const img=document.getElementById('preview-img');
+    if(img.src && img.src!==window.location.href) document.getElementById('btn-analyse').disabled=false;
+  }catch(e){
+    dot.classList.add('error');
+    txt.innerHTML='<strong>'+lxt('model_error')+'</strong> '+e.message;
+    prog.textContent='✗';
+    document.getElementById('fm-model').textContent='Error ✗';
+    console.error(e);
+  }
+}
+loadModel();
+
+// ── MODE SWITCH ───────────────────────────────────────────────────────────────
+function switchMode(m){
+  document.getElementById('tab-upload').classList.toggle('active',m==='upload');
+  document.getElementById('tab-camera').classList.toggle('active',m==='camera');
+  document.getElementById('section-upload').style.display=m==='upload'?'':'none';
+  document.getElementById('section-camera').style.display=m==='camera'?'':'none';
+  if(m==='upload') stopCamera();
+}
+
+// ── PRECAUTIONS TOGGLE ────────────────────────────────────────────────────────
+function togglePrec(){
+  const g=document.getElementById('prec-grid'),
+        a=document.getElementById('prec-arrow'),
+        open=g.style.display!=='none';
+  g.style.display=open?'none':'';
+  a.classList.toggle('open',!open);
+}
+
+// ── DRAG & DROP / FILE ────────────────────────────────────────────────────────
+const dz=document.getElementById('drop-zone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('dragover');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('dragover'));
+dz.addEventListener('drop',e=>{
+  e.preventDefault();dz.classList.remove('dragover');
+  const f=e.dataTransfer.files[0];
+  if(f&&f.type.startsWith('image/'))readFile(f);
+});
+document.getElementById('file-input').addEventListener('change',e=>{
+  if(e.target.files[0])readFile(e.target.files[0]);
+});
+function readFile(file){
+  const r=new FileReader();
+  r.onload=ev=>showPreview(ev.target.result, file.name, file.size);
+  r.readAsDataURL(file);
+}
+function showPreview(src,name,size){
+  const img=document.getElementById('preview-img');
+  img.onload=()=>{
+    document.getElementById('fm-dims').textContent=img.naturalWidth+' × '+img.naturalHeight+' px';
+    if(modelReady)document.getElementById('btn-analyse').disabled=false;
+  };
+  img.src=src;
+  document.getElementById('preview-card').classList.add('show');
+  document.getElementById('fm-name').textContent=name||'capture.jpg';
+  document.getElementById('fm-size').textContent=size?(size/1024).toFixed(1)+' KB':'—';
+  document.getElementById('fm-model').textContent=modelReady?'Ready ✓':'Loading…';
+  document.getElementById('results-panel').classList.remove('show');
+  document.getElementById('results-panel').style.display='none';
+  setTimeout(()=>document.getElementById('preview-card').scrollIntoView({behavior:'smooth',block:'nearest'}),120);
+}
+function clearImage(){
+  document.getElementById('preview-img').src='';
+  document.getElementById('preview-card').classList.remove('show');
+  document.getElementById('results-panel').classList.remove('show');
+  document.getElementById('results-panel').style.display='none';
+  document.getElementById('file-input').value='';
+  document.getElementById('btn-analyse').disabled=true;
+}
+
+// ── CAMERA ────────────────────────────────────────────────────────────────────
+let camStream=null, facing='environment', allCams=[], activeCamId=null;
+
+async function startCamera(){
+  document.getElementById('cam-placeholder').style.display='none';
+  document.getElementById('camera-section').classList.add('show');
+  await openCam({facingMode:facing});
+}
+async function openCam(constraints){
+  if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({
+      video:{...constraints,width:{ideal:1920},height:{ideal:1080}}
+    });
+    camStream=stream;
+    const v=document.getElementById('cam-video');
+    v.srcObject=stream;
+    const track=stream.getVideoTracks()[0];
+    const s=track.getSettings();
+    activeCamId=s.deviceId;
+    facing=s.facingMode||facing;
+    document.getElementById('cam-facing-badge').textContent=
+      (facing==='user'?lxt('front_cam'):lxt('rear_cam'))+' '+lxt('camera_word');
+    await populateCamList();
+  }catch(e){
+    alert(lxt('cam_error')+' '+e.message+'\n'+lxt('cam_check'));
+    stopCamera();
+  }
+}
+async function populateCamList(){
+  try{
+    const devs=await navigator.mediaDevices.enumerateDevices();
+    allCams=devs.filter(d=>d.kind==='videoinput');
+    const bar=document.getElementById('cam-device-bar');
+    const wrap=document.getElementById('cam-dev-btns');
+    wrap.innerHTML='';
+    if(allCams.length>1){
+      bar.classList.add('show');
+      allCams.forEach((d,i)=>{
+        const lbl=d.label||(d.deviceId===activeCamId?'Current Camera':'Camera '+(i+1));
+        const short=lbl.length>24?lbl.slice(0,22)+'…':lbl;
+        const b=document.createElement('button');
+        b.className='cam-dev-btn'+(d.deviceId===activeCamId?' on':'');
+        b.textContent=short;
+        b.onclick=()=>openCam({deviceId:{exact:d.deviceId}});
+        wrap.appendChild(b);
+      });
+    }else{
+      bar.classList.remove('show');
+    }
+  }catch(e){console.warn(e);}
+}
+async function flipCamera(){
+  facing=facing==='environment'?'user':'environment';
+  document.getElementById('cam-facing-badge').textContent=(facing==='user'?lxt('front_cam'):lxt('rear_cam'))+' '+lxt('camera_word');
+  await openCam({facingMode:facing});
+}
+function stopCamera(){
+  if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}
+  document.getElementById('camera-section').classList.remove('show');
+  document.getElementById('cam-device-bar').classList.remove('show');
+  document.getElementById('cam-placeholder').style.display='';
+}
+function captureFrame(){
+  const v=document.getElementById('cam-video');
+  if(!v.videoWidth){alert(lxt('cam_not_ready'));return;}
+  const c=document.getElementById('img-canvas');
+  // Capture full-res frame (preprocessing does the crop+resize at inference time)
+  c.width=v.videoWidth; c.height=v.videoHeight;
+  const ctx=c.getContext('2d');
+  // Mirror front camera horizontally so capture matches what user sees
+  if(facing==='user'){
+    ctx.translate(v.videoWidth,0);
+    ctx.scale(-1,1);
+  }
+  ctx.drawImage(v,0,0);
+  if(facing==='user'){ctx.setTransform(1,0,0,1,0,0);}
+  const url=c.toDataURL('image/jpeg',0.95);
+  showPreview(url,'camera_capture.jpg',Math.round(url.length*0.75));
+  stopCamera();
+  switchMode('upload');
+}
+
+// ── X-RAY PREPROCESSING PIPELINE ────────────────────────────────────────────
+// Converts any online/camera X-ray image to match the training data distribution.
+// The TM model was trained on grayscale X-rays (from Kaggle chest X-ray datasets)
+// stored as 3-channel RGB with R=G=B. Online images may have color, different
+// contrast, inverted polarity, or thick black/white borders. We fix all of this.
+
+async function preprocessXray(imgEl) {
+  return tf.tidy(() => {
+    const W = imgEl.naturalWidth, H = imgEl.naturalHeight;
+    const offscreen = document.getElementById('img-canvas');
+    const ctx = offscreen.getContext('2d');
+
+    // ── STEP 1: Draw full image at native resolution ──────────────────────
+    offscreen.width = W; offscreen.height = H;
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(imgEl, 0, 0, W, H);
+    const rawData = ctx.getImageData(0, 0, W, H).data; // Uint8ClampedArray RGBA
+
+    // ── STEP 2: Convert to grayscale (luminance-weighted) ─────────────────
+    // X-rays are inherently grayscale. The TM training dataset (COVID-19
+    // Radiography Database / Kaggle chest X-ray) stores images as grayscale
+    // PNG/JPEG with R=G=B. Color web images must be converted to match.
+    const gray = new Uint8Array(W * H);
+    for (let i = 0; i < W * H; i++) {
+      const r = rawData[i * 4];
+      const g = rawData[i * 4 + 1];
+      const b = rawData[i * 4 + 2];
+      // Standard luminance-weighted grayscale conversion
+      gray[i] = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
+    }
+
+    // ── STEP 3: Auto-detect and fix inverted images ───────────────────────
+    // Standard X-ray: dark background (air = black), bright bones/tissue.
+    // Some online databases store them inverted. Detect by background brightness:
+    // sample corners (typically background) and check if they're bright or dark.
+    const corners = [
+      gray[0], gray[W - 1], gray[(H - 1) * W], gray[H * W - 1],
+      gray[Math.floor(H / 2) * W], // left edge mid
+      gray[Math.floor(H / 2) * W + W - 1], // right edge mid
+    ];
+    const cornerMean = corners.reduce((a, b) => a + b, 0) / corners.length;
+    let grayFinal = gray;
+    if (cornerMean > 128) {
+      // Background is bright => image is inverted, flip it
+      grayFinal = new Uint8Array(W * H);
+      for (let i = 0; i < W * H; i++) grayFinal[i] = 255 - gray[i];
+    }
+
+    // ── STEP 4: Auto-crop black borders ───────────────────────────────────
+    // Many online X-rays have thick black borders which waste resolution.
+    // Find the bounding box of non-background pixels (threshold > 15).
+    const THRESH = 15;
+    let minX = W, maxX = 0, minY = H, maxY = 0;
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        if (grayFinal[y * W + x] > THRESH) {
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
+        }
+      }
+    }
+    // Only crop if meaningful content found (at least 50% of original size)
+    const cropW = maxX - minX + 1, cropH = maxY - minY + 1;
+    if (cropW > W * 0.5 && cropH > H * 0.5 && cropW > 0 && cropH > 0) {
+      // Draw cropped region
+      offscreen.width = cropW; offscreen.height = cropH;
+      // Re-draw from grayFinal into the canvas
+      const cropImg = ctx.createImageData(cropW, cropH);
+      for (let cy = 0; cy < cropH; cy++) {
+        for (let cx = 0; cx < cropW; cx++) {
+          const v = grayFinal[(minY + cy) * W + (minX + cx)];
+          const idx = (cy * cropW + cx) * 4;
+          cropImg.data[idx] = cropImg.data[idx+1] = cropImg.data[idx+2] = v;
+          cropImg.data[idx+3] = 255;
+        }
+      }
+      ctx.putImageData(cropImg, 0, 0);
+    } else {
+      // No valid crop, redraw grayscale image from grayFinal
+      offscreen.width = W; offscreen.height = H;
+      const fullImg = ctx.createImageData(W, H);
+      for (let i = 0; i < W * H; i++) {
+        const v = grayFinal[i];
+        fullImg.data[i*4] = fullImg.data[i*4+1] = fullImg.data[i*4+2] = v;
+        fullImg.data[i*4+3] = 255;
+      }
+      ctx.putImageData(fullImg, 0, 0);
+    }
+
+    // ── STEP 5: Histogram equalisation (CLAHE-approximation) ─────────────
+    // Online X-rays have very different contrast/exposure vs training data.
+    // Equalising the histogram maps the image to a standard distribution.
+    const curW = offscreen.width, curH = offscreen.height;
+    const imgData = ctx.getImageData(0, 0, curW, curH);
+    const pixels = imgData.data;
+    const n = curW * curH;
+
+    // Build histogram (grayscale channel 0)
+    const hist = new Int32Array(256);
+    for (let i = 0; i < n; i++) hist[pixels[i * 4]]++;
+
+    // Compute CDF
+    const cdf = new Int32Array(256);
+    cdf[0] = hist[0];
+    for (let i = 1; i < 256; i++) cdf[i] = cdf[i-1] + hist[i];
+    const cdfMin = cdf.find(v => v > 0) || 0;
+
+    // Apply equalisation
+    const equalized = new Uint8ClampedArray(n * 4);
+    for (let i = 0; i < n; i++) {
+      const v = pixels[i * 4];
+      const eq = Math.round(((cdf[v] - cdfMin) / (n - cdfMin)) * 255);
+      equalized[i*4] = equalized[i*4+1] = equalized[i*4+2] = eq;
+      equalized[i*4+3] = 255;
+    }
+    const eqData = new ImageData(equalized, curW, curH);
+    ctx.putImageData(eqData, 0, 0);
+
+    // ── STEP 6: Center-crop to square then resize to 224×224 ──────────────
+    const finalW = offscreen.width, finalH = offscreen.height;
+    const sq = Math.min(finalW, finalH);
+    const sx = Math.floor((finalW - sq) / 2);
+    const sy = Math.floor((finalH - sq) / 2);
+
+    const out = document.createElement('canvas');
+    out.width = 224; out.height = 224;
+    const outCtx = out.getContext('2d');
+    outCtx.imageSmoothingEnabled = true;
+    outCtx.imageSmoothingQuality = 'high';
+    outCtx.drawImage(offscreen, sx, sy, sq, sq, 0, 0, 224, 224);
+
+    // ── STEP 7: Normalise to [-1, 1] — exact MobileNetV2 preprocess_input ─
+    // pixel/127.5 - 1  maps [0,255] → [-1, 1]
+    return tf.browser.fromPixels(out)
+             .toFloat()
+             .div(tf.scalar(127.5))
+             .sub(tf.scalar(1))
+             .expandDims(0);
+  });
+}
+
+// ── INFERENCE ─────────────────────────────────────────────────────────────────
+async function analyseXRay(){
+  if(!modelReady){alert(lxt('not_ready'));return;}
+  const img=document.getElementById('preview-img');
+  if(!img.src||img.src===window.location.href){alert('Please load an X-ray image first.');return;}
+  const overlay=document.getElementById('xray-overlay');
+  const status=document.getElementById('scan-status');
+  overlay.classList.add('visible');
+  document.getElementById('btn-analyse').disabled=true;
+  document.getElementById('results-panel').classList.remove('show');
+  document.getElementById('results-panel').style.display='none';
+  try{
+    status.textContent=lxt('scan_preprocessing')+'…';
+    await tick(80);
+
+    // ── FULL X-RAY PREPROCESSING PIPELINE ────────────────────────────────────
+    // This model (TM MobileNetV2) was trained on grayscale X-rays stored as RGB.
+    // Online X-rays differ in contrast, borders, inversion, and color channels.
+    // We normalise everything to match the training distribution exactly.
+    const tensor = await preprocessXray(img);
+    status.textContent=lxt('scan_running');
+    await tick(60);
+    const out=model.predict(tensor);
+    const data=await out.data();
+    tensor.dispose();out.dispose();
+    status.textContent=lxt('scan_generating');
+    await tick(120);
+    const results=LABELS.map((l,i)=>({label:l,prob:data[i],pct:+(data[i]*100).toFixed(1)}));
+    results.sort((a,b)=>b.prob-a.prob);
+    renderResults(results);
+  }catch(e){
+    console.error(e);
+    alert('Analysis failed: '+e.message);
+  }finally{
+    overlay.classList.remove('visible');
+    document.getElementById('btn-analyse').disabled=false;
+  }
+}
+function tick(ms){return new Promise(r=>setTimeout(r,ms));}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function renderResults(results){
+  const top=results[0], info=getMeta(top.label);
+  const cl=top.pct>=88?'Very High Confidence':top.pct>=68?'High Confidence':top.pct>=48?'Moderate Confidence':'Low Confidence — See a Doctor';
+  const td=document.getElementById('top-diagnosis');
+  td.style.cssText=`background:linear-gradient(135deg,${info.bg},rgba(0,0,0,.15));border:1px solid ${info.color}44`;
+  td.innerHTML=`
+    <div class="td-icon">${info.icon}</div>
+    <div style="flex:1;min-width:0">
+      <div class="td-tag" style="color:${info.tc}">${cl}</div>
+      <div class="td-name" style="color:${info.tc}">${info.sn}</div>
+      <div class="td-conf">
+        <span class="conf-badge" style="color:${info.color}">${top.pct.toFixed(1)}%</span>
+        <span style="color:rgba(255,255,255,.4)">confidence</span>
+      </div>
+      <div class="td-desc" style="color:rgba(255,255,255,.6)">${info.desc}</div>
+    </div>`;
+  const list=document.getElementById('prediction-list');
+  list.innerHTML='';
+  results.forEach((r,i)=>{
+    const m=getMeta(r.label);
+    const row=document.createElement('div');
+    row.className='pred-row'+(i===0?' top-row':'');
+    row.style.animationDelay=(i*.07)+'s';
+    const rs=i===0?`background:${m.color}22;color:${m.color}`:'background:rgba(255,255,255,.05);color:var(--muted)';
+    row.innerHTML=`
+      <div class="pred-icon">${m.icon}</div>
+      <div class="pred-name"><div class="pred-n" style="color:${i===0?m.tc:'var(--text)'}">${m.sn}</div></div>
+      <div class="pred-bar-wrap">
+        <div class="pred-bar-bg"><div class="pred-bar-fill" id="pb${i}" style="background:${m.color}"></div></div>
+        <div class="pred-pct-row">
+          <div class="pred-pct" style="color:${m.color}">${r.pct.toFixed(1)}%</div>
+          <div class="pred-rank" style="${rs}">${i===0?'TOP':'#'+(i+1)}</div>
+        </div>
+      </div>`;
+    list.appendChild(row);
+    setTimeout(()=>{const b=document.getElementById('pb'+i);if(b)b.style.width=r.pct+'%';},160+i*90);
+  });
+  const panel=document.getElementById('results-panel');
+  panel.style.display='block';
+  panel.classList.add('show');
+  setTimeout(()=>panel.scrollIntoView({behavior:'smooth',block:'start'}),110);
+}
+
+</script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-# 🏥 MediScan AI — AI Disease Risk Prediction System
+# 🏥 Aarogya-AI :— AI Disease Risk Prediction System
 
 🔗 **Live Application:**  
 https://aarogya-ai-09ha.onrender.com/
